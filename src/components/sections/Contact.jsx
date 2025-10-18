@@ -216,7 +216,7 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
   return (
     <section
       ref={sectionRef}
-      className="w-full h-screen relative overflow-y-auto scrollbar-hide"
+      className="w-full min-h-screen relative  scrollbar-hide"
       style={{ backgroundColor: mainBgColor }}
     >
       <BackgroundGrid
