@@ -17,64 +17,114 @@ function timeAgo(dateString) {
   return date.toLocaleDateString();
 }
 
-// Helper function to get descriptive activity text
+const capitalize = (s) =>
+  typeof s === "string" && s.length
+    ? s.charAt(0).toUpperCase() + s.slice(1)
+    : "";
+
+// Helper function to get descriptive activity text (made defensive)
 const getActivityDescription = (event, accentColor) => {
+  const repoName = event?.repo?.name || "repository";
   const repoNameStyle = { color: accentColor };
 
-  switch (event.type) {
-    case "PushEvent":
+  const payload = event?.payload || {};
+
+  switch (event?.type) {
+    case "PushEvent": {
+      // commit count may be missing for some events — fall back to payload.size if present
+      const commitArray = Array.isArray(payload.commits)
+        ? payload.commits
+        : null;
+      const commitCount =
+        commitArray?.length ??
+        (typeof payload.size === "number" ? payload.size : null);
+
+      const branch =
+        typeof payload.ref === "string"
+          ? payload.ref.replace(/^refs\/heads\//, "")
+          : null;
+
+      if (commitCount == null) {
+        // unknown commit count
+        return (
+          <>
+            Pushed to <span style={repoNameStyle}>{repoName}</span>
+            {branch ? (
+              <>
+                {" "}
+                on <strong>{branch}</strong>
+              </>
+            ) : null}
+          </>
+        );
+      }
+
       return (
         <>
-          Pushed {event.payload.commits.length} commit
-          {event.payload.commits.length > 1 ? "s" : ""} to{" "}
-          <span style={repoNameStyle}>{event.repo.name}</span>
+          Pushed {commitCount} commit{commitCount > 1 ? "s" : ""}{" "}
+          {branch ? (
+            <>
+              to <strong>{branch}</strong> in{" "}
+              <span style={repoNameStyle}>{repoName}</span>
+            </>
+          ) : (
+            <>
+              to <span style={repoNameStyle}>{repoName}</span>
+            </>
+          )}
         </>
       );
-    case "PullRequestEvent":
+    }
+    case "PullRequestEvent": {
+      const action = payload?.action || "";
+      const pr = payload?.pull_request;
+      const verb =
+        action === "opened"
+          ? "Opened"
+          : action === "closed" && pr?.merged
+          ? "Merged"
+          : capitalize(action) || "Updated";
       return (
         <>
-          {event.payload.action === "opened"
-            ? "Opened"
-            : event.payload.action === "closed" &&
-              event.payload.pull_request.merged
-            ? "Merged"
-            : event.payload.action.charAt(0).toUpperCase() +
-              event.payload.action.slice(1)}{" "}
-          PR in <span style={repoNameStyle}>{event.repo.name}</span>
+          {verb} PR in <span style={repoNameStyle}>{repoName}</span>
         </>
       );
+    }
     case "ForkEvent":
       return (
         <>
-          Forked <span style={repoNameStyle}>{event.repo.name}</span>
+          Forked <span style={repoNameStyle}>{repoName}</span>
         </>
       );
-    case "IssuesEvent":
+    case "IssuesEvent": {
+      const action = payload?.action || "";
       return (
         <>
-          {event.payload.action.charAt(0).toUpperCase() +
-            event.payload.action.slice(1)}{" "}
-          issue in <span style={repoNameStyle}>{event.repo.name}</span>
+          {capitalize(action)} issue in{" "}
+          <span style={repoNameStyle}>{repoName}</span>
         </>
       );
-    case "CreateEvent":
+    }
+    case "CreateEvent": {
+      const refType = payload?.ref_type || payload?.refType || "ref";
       return (
         <>
-          Created {event.payload.ref_type}{" "}
-          <span style={repoNameStyle}>{event.repo.name}</span>
+          Created {refType} <span style={repoNameStyle}>{repoName}</span>
         </>
       );
+    }
     case "WatchEvent":
       return (
         <>
-          Starred <span style={repoNameStyle}>{event.repo.name}</span>
+          Starred <span style={repoNameStyle}>{repoName}</span>
         </>
       );
     default:
       return (
         <>
-          Did <span style={repoNameStyle}>{event.type}</span> on{" "}
-          <span style={repoNameStyle}>{event.repo.name}</span>
+          Performed{" "}
+          <span style={repoNameStyle}>{event?.type ?? "activity"}</span> on{" "}
+          <span style={repoNameStyle}>{repoName}</span>
         </>
       );
   }
@@ -116,9 +166,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
 
   // Fetch pinned repos using GraphQL
   const fetchPinnedRepos = async (username, token) => {
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const query = `
     query($login: String!) {
       user(login: $login) {
@@ -150,6 +198,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                   }
                 }
               }
+              isFork
             }
           }
         }
@@ -165,9 +214,9 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
         { headers }
       );
 
-      if (response.data && response.data.data && response.data.data.user) {
+      if (response?.data?.data?.user) {
         return (
-          response.data.data.user.pinnedItems.nodes.filter(
+          (response.data.data.user.pinnedItems?.nodes || []).filter(
             (repo) => !repo.isFork
           ) || []
         );
@@ -185,7 +234,9 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
       setLoading(true);
       try {
         if (!GITHUB_TOKEN) {
-          console.error("GitHub token is missing!");
+          console.warn(
+            "GitHub token is missing — pinned repos will not be fetched via GraphQL."
+          );
           setProjects([]);
           setLoading(false);
           return;
@@ -196,7 +247,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
           GITHUB_TOKEN
         );
 
-        if (pinnedRepos.length === 0) {
+        if (!Array.isArray(pinnedRepos) || pinnedRepos.length === 0) {
           console.warn("No pinned repos found");
           setProjects([]);
         } else {
@@ -223,7 +274,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
               stars: repo.stargazerCount || 0,
               forks: repo.forkCount || 0,
               primaryLanguage: repo.primaryLanguage,
-              updated: new Date(repo.pushedAt),
+              updated: repo.pushedAt ? new Date(repo.pushedAt) : null,
             };
           });
           setProjects(detailedRepos);
@@ -238,15 +289,25 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
     loadRepos();
   }, [GITHUB_TOKEN]);
 
-  // Fetch recent activity
+  // Fetch recent activity (defensive and use token if present)
   useEffect(() => {
     const fetchActivity = async () => {
       setActivityLoading(true);
       try {
+        const headers = GITHUB_TOKEN
+          ? { Authorization: `Bearer ${GITHUB_TOKEN}` }
+          : {};
         const res = await axios.get(
-          `https://api.github.com/users/${GITHUB_USERNAME}/events/public`
+          `https://api.github.com/users/${GITHUB_USERNAME}/events/public`,
+          { headers }
         );
-        setActivity(res.data.slice(0, 5)); // Fetching 5 recent activities
+
+        if (Array.isArray(res?.data)) {
+          setActivity(res.data.slice(0, 5)); // Fetching 5 recent activities
+        } else {
+          console.warn("Unexpected GitHub events response:", res?.data);
+          setActivity([]);
+        }
       } catch (e) {
         console.error("Error fetching GitHub activity:", e);
         setActivity([]);
@@ -254,7 +315,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
       setActivityLoading(false);
     };
     fetchActivity();
-  }, []);
+  }, [GITHUB_TOKEN]);
 
   return (
     <section
@@ -323,7 +384,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                 <div className="grid sm:grid-cols-2 gap-6">
                   {projects.map((project, idx) => (
                     <div
-                      key={project.id}
+                      key={project.id || project.title || idx}
                       className={`group relative transition-all duration-1000 ${
                         isVisible
                           ? "opacity-100 translate-y-0"
@@ -566,7 +627,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                   <div className="space-y-4 text-sm">
                     {activity.map((event, idx) => (
                       <div
-                        key={event.id}
+                        key={event.id || idx}
                         className={`flex items-start transition-all duration-1000 ${
                           isVisible
                             ? "opacity-100 translate-x-0"
@@ -593,7 +654,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                             className="text-xs opacity-60"
                             style={{ color: textColor }}
                           >
-                            {timeAgo(event.created_at)}
+                            {timeAgo(event?.created_at)}
                           </div>
                         </div>
                       </div>
