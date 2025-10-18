@@ -1118,7 +1118,7 @@ const MainContent = forwardRef(
           style={{
             backgroundColor: mainBgColor,
             WebkitOverflowScrolling: "touch",
-            scrollSnapType: "y mandatory",
+
             overflowY: "auto",
           }}
         >
@@ -1138,8 +1138,7 @@ const MainContent = forwardRef(
                     boxSizing: "border-box",
                     borderBottom: `1px solid ${accentColor}20`,
                     backgroundColor: mainBgColor,
-                    scrollSnapAlign: "start",
-                    scrollSnapStop: "always",
+
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
