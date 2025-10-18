@@ -52,7 +52,6 @@ const MainContent = forwardRef(
     const lastTime = useRef(Date.now());
     const snapTimeoutRef = useRef(null);
     const zoomAnimationRef = useRef(null);
-    const savedPositionRef = useRef({ x: 0, y: 0 });
     const dragThresholdRef = useRef(false);
     const dragHintTimeoutRef = useRef(null);
 
@@ -61,6 +60,8 @@ const MainContent = forwardRef(
       active: false,
       startDistance: 0,
       hasTriggered: false,
+      centerX: 0,
+      centerY: 0,
     });
 
     // refs for latest position/velocity so RAF loops read fresh values
@@ -77,11 +78,12 @@ const MainContent = forwardRef(
     );
     const EDGE_RESISTANCE = 0.15;
     const FRICTION = 0.88;
-    const VELOCITY_THRESHOLD = 0.25; // slightly higher so inertia stops more predictably
+    const VELOCITY_THRESHOLD = 0.25;
     const SNAP_THRESHOLD = 0.3;
     const MAX_ZOOM = 1;
     const MENU_ZOOM = 0.38;
     const DRAG_THRESHOLD = 5;
+    const MENU_WIDTH = 384; // w-96 = 24rem = 384px
 
     // keep refs in sync with state
     useEffect(() => {
@@ -136,6 +138,23 @@ const MainContent = forwardRef(
       [PANEL_WIDTH, PANEL_HEIGHT]
     );
 
+    // Calculate the centered menu zoom position
+    const getMenuZoomPosition = useCallback(() => {
+      const availableWidth = window.innerWidth - MENU_WIDTH;
+      const centerX = availableWidth / 2;
+      const centerY = window.innerHeight / 2;
+
+      // The junction point in world coordinates is at (PANEL_WIDTH, PANEL_HEIGHT)
+      const junctionX = PANEL_WIDTH;
+      const junctionY = PANEL_HEIGHT;
+
+      // Position so junction appears at center of available space
+      return {
+        x: centerX - junctionX * MENU_ZOOM,
+        y: centerY - junctionY * MENU_ZOOM,
+      };
+    }, [PANEL_WIDTH, PANEL_HEIGHT, MENU_WIDTH, MENU_ZOOM]);
+
     const applyEdgeResistance = useCallback(
       (newPos) => {
         const maxX = 0;
@@ -185,7 +204,6 @@ const MainContent = forwardRef(
       });
 
       const distanceRatio = minDistance / Math.max(PANEL_WIDTH, PANEL_HEIGHT);
-      // If the user is close enough, snap to nearest panel, otherwise keep current position
       const duration = 300;
       const startPos = { ...positionRef.current };
       const startTime = Date.now();
@@ -204,9 +222,7 @@ const MainContent = forwardRef(
           animationRef.current = requestAnimationFrame(animate);
         } else {
           setVelocity({ x: 0, y: 0 });
-          savedPositionRef.current = { x: -targetPos.x, y: -targetPos.y };
           setActiveSection(closestPanel);
-          // update URL hash to reflect current panel
           try {
             window.history.replaceState(null, null, `#${closestPanel}`);
           } catch (err) {
@@ -219,7 +235,6 @@ const MainContent = forwardRef(
         if (animationRef.current) cancelAnimationFrame(animationRef.current);
         animate();
       } else {
-        // not close enough to snap; still update activeSection to closest for keyboard nav correctness
         setActiveSection(closestPanel);
         try {
           window.history.replaceState(null, null, `#${closestPanel}`);
@@ -292,6 +307,7 @@ const MainContent = forwardRef(
         const worldX = (clickX - positionRef.current.x) / zoom;
         const worldY = (clickY - positionRef.current.y) / zoom;
 
+        // Calculate target position to center the clicked point
         const targetX = rect.width / 2 - worldX;
         const targetY = rect.height / 2 - worldY;
 
@@ -314,43 +330,57 @@ const MainContent = forwardRef(
     );
 
     const triggerDragHint = useCallback(() => {
-      // Show the hint and keep it visible. It will be closed by other interactions.
       setShowDragHint(true);
     }, []);
 
-    // Close drag hint helper
     const closeDragHint = useCallback(() => {
       setShowDragHint(false);
     }, []);
 
-    // Wheel handling:
-    // - If ctrlKey (trackpad pinch), handle continuous zooming and menu state.
-    // - Otherwise (scroll/2-finger scroll), do NOT zoom; show drag hint instead.
+    // Wheel handling with fixed menu position
     const handleWheel = useCallback(
       (e) => {
-        if (isSimpleScroll) return; // let native scrolling happen on small/touch devices
+        if (isSimpleScroll) return;
         e.preventDefault();
 
-        // Treat ctrlKey wheel as pinch gesture (common on trackpads)
         if (e.ctrlKey) {
           const delta = -e.deltaY;
           const isZoomingOut = delta < 0;
           const isZoomingIn = delta > 0;
 
           if (isZoomingOut && zoom >= MAX_ZOOM - 1e-6) {
-            // zooming out from full zoom -> open menu
-            savedPositionRef.current = { ...positionRef.current };
-            animateZoomAndPositionTo(MENU_ZOOM, { x: 0, y: 0 }, true, false);
+            // Always zoom to centered menu position
+            const menuPos = getMenuZoomPosition();
+            animateZoomAndPositionTo(MENU_ZOOM, menuPos, true, false);
           } else if (isZoomingIn && zoom <= MENU_ZOOM + 1e-6) {
-            // zooming in from menu -> close menu
+            // Zoom into the pointer location
+            const rect = canvasRef.current?.getBoundingClientRect();
+            if (!rect) return;
+
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const worldX = (mouseX - positionRef.current.x) / zoom;
+            const worldY = (mouseY - positionRef.current.y) / zoom;
+
+            const targetX = rect.width / 2 - worldX;
+            const targetY = rect.height / 2 - worldY;
+
+            const maxX = 0;
+            const minX = -PANEL_WIDTH;
+            const maxY = 0;
+            const minY = -PANEL_HEIGHT;
+
+            const clampedX = Math.max(minX, Math.min(maxX, targetX));
+            const clampedY = Math.max(minY, Math.min(maxY, targetY));
+
             animateZoomAndPositionTo(
               MAX_ZOOM,
-              savedPositionRef.current,
+              { x: clampedX, y: clampedY },
               false,
               true
             );
           } else if (zoom > MENU_ZOOM && zoom < MAX_ZOOM) {
-            // intermediate zoom change centered on pointer
             const zoomSpeed = 0.0016;
             const newZoom = Math.max(
               MENU_ZOOM,
@@ -372,7 +402,6 @@ const MainContent = forwardRef(
             setZoom(newZoom);
             setPosition({ x: newX, y: newY });
 
-            // ensure menu state is consistent with zoom
             if (newZoom <= MENU_ZOOM && !isZoomedOut) {
               onOpenMenu?.();
               setIsZoomedOut(true);
@@ -386,7 +415,6 @@ const MainContent = forwardRef(
           return;
         }
 
-        // Non-ctrl wheel: show drag hint; do not zoom
         if (!isZoomedOut && zoom >= MAX_ZOOM) {
           triggerDragHint();
         }
@@ -402,6 +430,9 @@ const MainContent = forwardRef(
         triggerDragHint,
         onZoomChange,
         isSimpleScroll,
+        getMenuZoomPosition,
+        PANEL_WIDTH,
+        PANEL_HEIGHT,
       ]
     );
 
@@ -415,9 +446,7 @@ const MainContent = forwardRef(
       };
     }, [handleWheel, isSimpleScroll]);
 
-    // Ensure menu open/close stays consistent with zoom level:
     useEffect(() => {
-      // small hysteresis so toggling fast doesn't misfire
       if (zoom <= MENU_ZOOM + 1e-5 && !isZoomedOut) {
         onOpenMenu?.();
         setIsZoomedOut(true);
@@ -429,7 +458,6 @@ const MainContent = forwardRef(
       }
     }, [zoom, isZoomedOut, onOpenMenu, onCloseMenu, onZoomChange]);
 
-    // Cleanup on unmount
     useEffect(() => {
       return () => {
         if (zoomAnimationRef.current)
@@ -441,7 +469,6 @@ const MainContent = forwardRef(
       };
     }, []);
 
-    // Read URL hash on first mount and set initial view accordingly.
     useEffect(() => {
       try {
         const hash = (window.location.hash || "").replace("#", "");
@@ -450,7 +477,6 @@ const MainContent = forwardRef(
           if (isSimpleScroll && canvasRef.current) {
             const el = canvasRef.current.querySelector(`#${hash}`);
             if (el) {
-              // scroll into view for mobile
               setTimeout(() => el.scrollIntoView({ behavior: "instant" }), 0);
             }
           } else {
@@ -460,24 +486,19 @@ const MainContent = forwardRef(
             );
             const targetPos = { x: -p.x, y: -p.y };
             setPosition(targetPos);
-            savedPositionRef.current = targetPos;
-            // make sure velocity is zero
             setVelocity({ x: 0, y: 0 });
           }
         } else {
-          // default home, ensure position/savedPosition consistent
           const p = gridToPixels(
             panelLayout.home.gridX,
             panelLayout.home.gridY
           );
           const targetPos = { x: -p.x, y: -p.y };
           setPosition(targetPos);
-          savedPositionRef.current = targetPos;
         }
       } catch (err) {
         /* ignore */
       }
-      // we only want this to run once on mount (panelLayout and gridToPixels are stable)
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -488,7 +509,6 @@ const MainContent = forwardRef(
           const panel = panelLayout[sectionId];
           if (!panel) return;
 
-          // If simple scroll mode, scroll the native container to the section
           if (isSimpleScroll && canvasRef.current) {
             const sectionEl = canvasRef.current.querySelector(`#${sectionId}`);
             if (sectionEl) {
@@ -530,7 +550,6 @@ const MainContent = forwardRef(
               requestAnimationFrame(animate);
             } else {
               setVelocity({ x: 0, y: 0 });
-              savedPositionRef.current = { x: -targetPos.x, y: -targetPos.y };
               setActiveSection(sectionId);
             }
           };
@@ -553,7 +572,6 @@ const MainContent = forwardRef(
       ]
     );
 
-    // Update active section by viewport center (desktop canvas mode)
     useEffect(() => {
       if (isSimpleScroll) return;
 
@@ -590,7 +608,6 @@ const MainContent = forwardRef(
       isSimpleScroll,
     ]);
 
-    // Improved inertia loop using RAF so motion is smooth and continuous
     useEffect(() => {
       if (isSimpleScroll) return;
       if (isDragging || isZoomedOut) return;
@@ -601,12 +618,10 @@ const MainContent = forwardRef(
         const vx = velocityRef.current.x;
         const vy = velocityRef.current.y;
 
-        // stop if velocities are small
         if (
           Math.abs(vx) <= VELOCITY_THRESHOLD &&
           Math.abs(vy) <= VELOCITY_THRESHOLD
         ) {
-          // small settle -> snap
           setVelocity({ x: 0, y: 0 });
           snapTimeoutRef.current = setTimeout(() => {
             snapToNearestPanel();
@@ -614,25 +629,21 @@ const MainContent = forwardRef(
           return;
         }
 
-        // apply friction
         const newVelocity = {
           x: vx * FRICTION,
           y: vy * FRICTION,
         };
 
-        // compute tentative new pos
         let newPos = {
           x: positionRef.current.x + newVelocity.x,
           y: positionRef.current.y + newVelocity.y,
         };
 
-        // bounds depend on current zoom
         const maxX = 0;
         const minX = -PANEL_WIDTH * zoom;
         const maxY = 0;
         const minY = -PANEL_HEIGHT * zoom;
 
-        // if near edges & still moving quickly, use resistance
         if (Math.abs(newVelocity.x) > 1.0 || Math.abs(newVelocity.y) > 1.0) {
           newPos = applyEdgeResistance(newPos);
         } else {
@@ -650,7 +661,6 @@ const MainContent = forwardRef(
         Math.abs(velocity.x) > VELOCITY_THRESHOLD ||
         Math.abs(velocity.y) > VELOCITY_THRESHOLD
       ) {
-        // ensure we have a fresh start
         if (animationRef.current) cancelAnimationFrame(animationRef.current);
         rafId = requestAnimationFrame(step);
       }
@@ -673,11 +683,10 @@ const MainContent = forwardRef(
 
     const handleDragStart = useCallback(
       (clientX, clientY) => {
-        if (isZoomedOut) return; // Do not allow dragging when zoomed out
+        if (isZoomedOut) return;
         if (animationRef.current) cancelAnimationFrame(animationRef.current);
         if (snapTimeoutRef.current) clearTimeout(snapTimeoutRef.current);
 
-        // Close drag hint when starting to drag
         closeDragHint();
 
         setIsDragging(true);
@@ -735,7 +744,6 @@ const MainContent = forwardRef(
         }
         setIsDragging(false);
         if (!isZoomedOut) {
-          savedPositionRef.current = { ...positionRef.current };
           if (snapTimeoutRef.current) clearTimeout(snapTimeoutRef.current);
           snapTimeoutRef.current = setTimeout(() => {
             snapToNearestPanel();
@@ -748,7 +756,7 @@ const MainContent = forwardRef(
 
     const handleMouseDown = useCallback(
       (e) => {
-        if (isSimpleScroll) return; // don't intercept on simple scroll mode
+        if (isSimpleScroll) return;
 
         if (
           e.target.tagName === "A" ||
@@ -761,7 +769,6 @@ const MainContent = forwardRef(
           return;
         }
 
-        // Close drag hint on click
         closeDragHint();
 
         e.preventDefault();
@@ -786,21 +793,31 @@ const MainContent = forwardRef(
       [handleDragEnd, isSimpleScroll]
     );
 
-    // Touch helpers for pinch distance
     const getTouchDistance = (touches) => {
       if (touches.length < 2) return 0;
       const [a, b] = touches;
       return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
     };
 
+    const getTouchCenter = (touches) => {
+      if (touches.length < 2) return { x: 0, y: 0 };
+      const [a, b] = touches;
+      return {
+        x: (a.clientX + b.clientX) / 2,
+        y: (a.clientY + b.clientY) / 2,
+      };
+    };
+
     const handleTouchStart = useCallback(
       (e) => {
-        if (isSimpleScroll) return; // let native scrolling/pinch work
+        if (isSimpleScroll) return;
         if (e.touches.length === 2) {
-          // Begin pinch
           pinchRef.current.active = true;
           pinchRef.current.startDistance = getTouchDistance(e.touches);
           pinchRef.current.hasTriggered = false;
+          const center = getTouchCenter(e.touches);
+          pinchRef.current.centerX = center.x;
+          pinchRef.current.centerY = center.y;
           setIsDragging(false);
         } else if (e.touches.length === 1 && !isZoomedOut) {
           const touch = e.touches[0];
@@ -812,7 +829,7 @@ const MainContent = forwardRef(
 
     const handleTouchMove = useCallback(
       (e) => {
-        if (isSimpleScroll) return; // native handling
+        if (isSimpleScroll) return;
         if (e.touches.length === 2 && pinchRef.current.active) {
           e.preventDefault();
           const distance = getTouchDistance(e.touches);
@@ -821,17 +838,37 @@ const MainContent = forwardRef(
           }
           const scale = distance / (pinchRef.current.startDistance || 1);
 
-          // Treat pinch-in (scale < 1) as "zoom out to menu"
           if (scale < 0.92 && !isZoomedOut) {
-            savedPositionRef.current = { ...positionRef.current };
-            animateZoomAndPositionTo(MENU_ZOOM, { x: 0, y: 0 }, true, false);
+            // Zoom out to centered menu position
+            const menuPos = getMenuZoomPosition();
+            animateZoomAndPositionTo(MENU_ZOOM, menuPos, true, false);
             pinchRef.current.hasTriggered = true;
           }
-          // Pinch-out (scale > 1) to zoom back in if currently zoomed out
           if (scale > 1.08 && isZoomedOut) {
+            // Zoom in to the pinch center
+            const rect = canvasRef.current?.getBoundingClientRect();
+            if (!rect) return;
+
+            const centerX = pinchRef.current.centerX - rect.left;
+            const centerY = pinchRef.current.centerY - rect.top;
+
+            const worldX = (centerX - positionRef.current.x) / zoom;
+            const worldY = (centerY - positionRef.current.y) / zoom;
+
+            const targetX = rect.width / 2 - worldX;
+            const targetY = rect.height / 2 - worldY;
+
+            const maxX = 0;
+            const minX = -PANEL_WIDTH;
+            const maxY = 0;
+            const minY = -PANEL_HEIGHT;
+
+            const clampedX = Math.max(minX, Math.min(maxX, targetX));
+            const clampedY = Math.max(minY, Math.min(maxY, targetY));
+
             animateZoomAndPositionTo(
               MAX_ZOOM,
-              savedPositionRef.current,
+              { x: clampedX, y: clampedY },
               false,
               true
             );
@@ -840,24 +877,30 @@ const MainContent = forwardRef(
           return;
         }
 
-        // Single-finger drag
         if (e.touches.length === 1) {
           const touch = e.touches[0];
           handleDragMove(touch.clientX, touch.clientY);
         }
       },
-      [handleDragMove, animateZoomAndPositionTo, isZoomedOut, isSimpleScroll]
+      [
+        handleDragMove,
+        animateZoomAndPositionTo,
+        isZoomedOut,
+        isSimpleScroll,
+        getMenuZoomPosition,
+        zoom,
+        PANEL_WIDTH,
+        PANEL_HEIGHT,
+      ]
     );
 
     const handleTouchEnd = useCallback(
       (e) => {
         if (isSimpleScroll) return;
         if (e.touches.length < 2) {
-          // End pinch
           pinchRef.current.active = false;
         }
         if (e.touches.length === 0) {
-          // End drag
           handleDragEnd(null);
         }
       },
@@ -866,19 +909,47 @@ const MainContent = forwardRef(
 
     const toggleMenu = useCallback(() => {
       if (isZoomedOut) {
+        // Zoom in to center of screen
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const worldX = (centerX - positionRef.current.x) / zoom;
+        const worldY = (centerY - positionRef.current.y) / zoom;
+
+        const targetX = centerX - worldX;
+        const targetY = centerY - worldY;
+
+        const maxX = 0;
+        const minX = -PANEL_WIDTH;
+        const maxY = 0;
+        const minY = -PANEL_HEIGHT;
+
+        const clampedX = Math.max(minX, Math.min(maxX, targetX));
+        const clampedY = Math.max(minY, Math.min(maxY, targetY));
+
         animateZoomAndPositionTo(
           MAX_ZOOM,
-          savedPositionRef.current,
+          { x: clampedX, y: clampedY },
           false,
           true
         );
       } else {
-        savedPositionRef.current = { ...positionRef.current };
-        animateZoomAndPositionTo(MENU_ZOOM, { x: 0, y: 0 }, true, false);
+        // Always zoom out to centered menu position
+        const menuPos = getMenuZoomPosition();
+        animateZoomAndPositionTo(MENU_ZOOM, menuPos, true, false);
       }
-    }, [isZoomedOut, animateZoomAndPositionTo]);
+    }, [
+      isZoomedOut,
+      animateZoomAndPositionTo,
+      getMenuZoomPosition,
+      zoom,
+      PANEL_WIDTH,
+      PANEL_HEIGHT,
+    ]);
 
-    // Keyboard navigation (unchanged; still zooms in and closes menu when navigating)
     useEffect(() => {
       const handleKeyPress = (e) => {
         if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
@@ -949,7 +1020,6 @@ const MainContent = forwardRef(
             false,
             true
           );
-          savedPositionRef.current = { x: -targetPos.x, y: -targetPos.y };
         }
       };
 
@@ -963,7 +1033,6 @@ const MainContent = forwardRef(
       toggleMenu,
     ]);
 
-    // Render helpers
     const renderPanels = useCallback(() => {
       return Object.entries(panelLayout).map(([key, panel]) => {
         const panelPos = gridToPixels(panel.gridX, panel.gridY);
@@ -1039,9 +1108,7 @@ const MainContent = forwardRef(
 
     const navState = getNavigationState();
 
-    // Simple scroll layout for touch/tablet/small screens:
     if (isSimpleScroll) {
-      // Mobile ordering: home (1), about (2), projects (3), contact (4)
       const mobileOrder = ["home", "about", "projects", "contact"];
 
       return (
@@ -1051,13 +1118,10 @@ const MainContent = forwardRef(
           style={{
             backgroundColor: mainBgColor,
             WebkitOverflowScrolling: "touch",
-            // enable scroll snapping on the Y axis while keeping native scrolling
             scrollSnapType: "y mandatory",
-            // ensure smooth momentum scrolling still works
             overflowY: "auto",
           }}
         >
-          {/* Sections stacked vertically for natural scrolling on mobile/tablet with snap */}
           <div className="flex flex-col">
             {mobileOrder.map((key) => {
               const panel = panelLayout[key];
@@ -1074,16 +1138,11 @@ const MainContent = forwardRef(
                     boxSizing: "border-box",
                     borderBottom: `1px solid ${accentColor}20`,
                     backgroundColor: mainBgColor,
-                    // ensure each section snaps to the top of the viewport
                     scrollSnapAlign: "start",
-                    // ensure the browser always tries to snap here
                     scrollSnapStop: "always",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
-                  }}
-                  onScroll={() => {
-                    /* no-op; native scrolling will handle */
                   }}
                 >
                   <div
@@ -1108,7 +1167,6 @@ const MainContent = forwardRef(
       );
     }
 
-    // Desktop / large-screen draggable canvas
     return (
       <div
         ref={canvasRef}
@@ -1125,7 +1183,6 @@ const MainContent = forwardRef(
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Canvas */}
         <div
           className="absolute origin-top-left transition-transform"
           style={{
@@ -1137,9 +1194,7 @@ const MainContent = forwardRef(
         >
           {renderPanels()}
         </div>
-        {/* Section Indicator / Menu Toggle */}
         <button
-          onClick={toggleMenu}
           className="fixed top-4 left-4 sm:top-6 sm:left-6 z-40 group transition-transform duration-300 hover:scale-105 active:scale-95"
           aria-label={isZoomedOut ? "Close menu" : "Open menu"}
           title={
@@ -1237,7 +1292,6 @@ const MainContent = forwardRef(
           </div>
         </button>
 
-        {/* Shortcuts - Hidden on touch devices */}
         {!isTouchDevice && (
           <div
             className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 px-4 py-3 rounded-lg backdrop-blur-sm transition-opacity duration-300"
@@ -1254,7 +1308,6 @@ const MainContent = forwardRef(
             </div>
           </div>
         )}
-        {/* Mouse Trail - Hidden on touch devices */}
         {!isTouchDevice && (
           <div
             className="fixed w-4 h-4 rounded-full pointer-events-none z-50 transition-opacity duration-300"
