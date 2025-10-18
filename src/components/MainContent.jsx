@@ -38,8 +38,9 @@ const MainContent = forwardRef(
     const [isZoomedOut, setIsZoomedOut] = useState(false);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
 
-    // Hint overlay to teach drag when user scrolls
-    const [showDragHint, setShowDragHint] = useState(false);
+    // Top-center control hint (the thing you asked to "add this on top center")
+    // default true so it shows; user can dismiss it
+    const [showTopControls, setShowTopControls] = useState(true);
 
     // Track screen width to decide simple scroll fallback
     const [screenWidth, setScreenWidth] = useState(
@@ -329,13 +330,12 @@ const MainContent = forwardRef(
       [isZoomedOut, zoom, PANEL_WIDTH, PANEL_HEIGHT, animateZoomAndPositionTo]
     );
 
-    const triggerDragHint = useCallback(() => {
-      setShowDragHint(true);
-    }, []);
-
-    const closeDragHint = useCallback(() => {
-      setShowDragHint(false);
-    }, []);
+    // Hide top controls when dragging starts
+    useEffect(() => {
+      if (isDragging && showTopControls) {
+        setShowTopControls(false);
+      }
+    }, [isDragging, showTopControls]);
 
     // Wheel handling with fixed menu position
     const handleWheel = useCallback(
@@ -414,10 +414,6 @@ const MainContent = forwardRef(
           }
           return;
         }
-
-        if (!isZoomedOut && zoom >= MAX_ZOOM) {
-          triggerDragHint();
-        }
       },
       [
         zoom,
@@ -427,7 +423,7 @@ const MainContent = forwardRef(
         animateZoomAndPositionTo,
         MENU_ZOOM,
         MAX_ZOOM,
-        triggerDragHint,
+
         onZoomChange,
         isSimpleScroll,
         getMenuZoomPosition,
@@ -687,7 +683,9 @@ const MainContent = forwardRef(
         if (animationRef.current) cancelAnimationFrame(animationRef.current);
         if (snapTimeoutRef.current) clearTimeout(snapTimeoutRef.current);
 
-        closeDragHint();
+        // Close drag hint and hide the top controls when dragging begins
+
+        setShowTopControls(false);
 
         setIsDragging(true);
         setDragStart({
@@ -699,7 +697,7 @@ const MainContent = forwardRef(
         lastTime.current = Date.now();
         dragThresholdRef.current = false;
       },
-      [isZoomedOut, closeDragHint]
+      [isZoomedOut]
     );
 
     const handleDragMove = useCallback(
@@ -769,12 +767,10 @@ const MainContent = forwardRef(
           return;
         }
 
-        closeDragHint();
-
         e.preventDefault();
         handleDragStart(e.clientX, e.clientY);
       },
-      [handleDragStart, isZoomedOut, menuRef, closeDragHint, isSimpleScroll]
+      [handleDragStart, isZoomedOut, menuRef, isSimpleScroll]
     );
 
     const handleMouseMove = useCallback(
@@ -1182,6 +1178,94 @@ const MainContent = forwardRef(
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        {/* Top-center control hint (added per request)
+            - Hidden on touch devices (mobile) because it duplicates native affordances
+            - Dismissible (click the "x")
+            - Automatically hides when the user starts dragging.
+        */}
+        {!isTouchDevice && showTopControls && (
+          <div
+            role="region"
+            aria-label="Canvas controls"
+            className="fixed z-50 left-1/2 top-4 -translate-x-1/2 flex items-center gap-6 px-4 py-2 rounded-lg"
+            style={{
+              backgroundColor: `${menuThemeColor}cc`,
+              border: `1px solid ${accentColor}40`,
+              color: textColor,
+              boxShadow: `0 6px 18px ${accentColor}20`,
+              maxWidth: "min(1000px, 90%)",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* Left block: mouse icon + text */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {/* simple mouse svg with top-left button highlight when showing the hint */}
+              <svg
+                width="34"
+                height="34"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden
+                style={{ flexShrink: 0 }}
+              >
+                {/* outer mouse shape */}
+                <rect
+                  x="5"
+                  y="3"
+                  width="14"
+                  height="18"
+                  rx="7"
+                  stroke={accentColor}
+                  strokeWidth="1.2"
+                  fill="transparent"
+                />
+                {/* top divider line */}
+                <line
+                  x1="12"
+                  y1="3"
+                  x2="12"
+                  y2="10"
+                  stroke={accentColor}
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                />
+                {/* bottom circle for scroll wheel */}
+                <circle cx="12" cy="14" r="1.2" fill={accentColor} />
+                {/* top-left "left mouse button" highlight – filled when the hint is visible */}
+                <rect
+                  x="7"
+                  y="5"
+                  width="4.2"
+                  height="5"
+                  rx="1.2"
+                  // fill the left button when showing the hint, otherwise transparent
+                  fill={showTopControls ? accentColor : "transparent"}
+                  stroke={accentColor}
+                  strokeWidth="0.9"
+                  style={{
+                    transition: "fill 160ms ease, transform 160ms ease",
+                    transformOrigin: "center",
+                    // slight pop when showing
+                    transform: showTopControls ? "scale(1)" : "scale(1)",
+                    opacity: showTopControls ? 0.98 : 0.9,
+                  }}
+                />
+              </svg>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <div
+                  style={{ fontSize: 23, fontWeight: 200, color: accentColor }}
+                >
+                  Drag for navigation while holding down the LMB.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Canvas */}
         <div
           className="absolute origin-top-left transition-transform"
           style={{
@@ -1193,6 +1277,7 @@ const MainContent = forwardRef(
         >
           {renderPanels()}
         </div>
+
         <button
           className="fixed top-4 left-4 sm:top-6 sm:left-6 z-40 group transition-transform duration-300 hover:scale-105 active:scale-95"
           aria-label={isZoomedOut ? "Close menu" : "Open menu"}
