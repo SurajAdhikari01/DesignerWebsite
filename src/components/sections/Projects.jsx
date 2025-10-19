@@ -215,11 +215,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
       );
 
       if (response?.data?.data?.user) {
-        return (
-          (response.data.data.user.pinnedItems?.nodes || []).filter(
-            (repo) => !repo.isFork
-          ) || []
-        );
+        return response.data.data.user.pinnedItems?.nodes || [];
       }
       return [];
     } catch (error) {
