@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import "./App.css";
 import MainContent from "./components/MainContent";
 
 function App() {
@@ -10,31 +9,15 @@ function App() {
   const mainContentRef = useRef(null);
   const menuRef = useRef(null);
   const [isMainContentZoomedOut, setIsMainContentZoomedOut] = useState(false);
+  const [disableContainerTransition, setDisableContainerTransition] =
+    useState(false);
 
-  const [activeTheme, setActiveTheme] = useState(() => {
-    return localStorage.getItem("activeTheme") || "skyBlush";
-  });
+  const [activeTheme, setActiveTheme] = useState("skyBlush");
 
   const [hoveredTheme, setHoveredTheme] = useState(null);
 
   // 🎨 COLOR THEMES
   const colorThemes = {
-    // lavenderDream: {
-    //   menu: "#E8D5E8",
-    //   main: "#F5F0FA",
-    //   accent: "#9B8FB8",
-    //   name: "Lavender Dream",
-    //   category: "Pastel",
-    //   preview: ["#E8D5E8", "#F5F0FA", "#9B8FB8"],
-    // },
-    // mintBreeze: {
-    //   menu: "#D5E8E0",
-    //   main: "#F0FAF5",
-    //   accent: "#7CB8A3",
-    //   name: "Mint Breeze",
-    //   category: "Pastel",
-    //   preview: ["#D5E8E0", "#F0FAF5", "#7CB8A3"],
-    // },
     peachSunset: {
       menu: "#FFE4D6",
       main: "#FFF5F0",
@@ -51,30 +34,6 @@ function App() {
       category: "Pastel",
       preview: ["#D6E8FF", "#F0F7FF", "#7CA8E8"],
     },
-    // midnightPurple: {
-    //   menu: "#1A1625",
-    //   main: "#0F0B14",
-    //   accent: "#9B8FB8",
-    //   name: "Midnight Purple",
-    //   category: "Dark",
-    //   preview: ["#1A1625", "#0F0B14", "#9B8FB8"],
-    // },
-    // deepOcean: {
-    //   menu: "#0A1628",
-    //   main: "#050B14",
-    //   accent: "#4A90E2",
-    //   name: "Deep Ocean",
-    //   category: "Dark",
-    //   preview: ["#0A1628", "#050B14", "#4A90E2"],
-    // },
-    // darkForest: {
-    //   menu: "#1A2520",
-    //   main: "#0F1612",
-    //   accent: "#6B9B7F",
-    //   name: "Dark Forest",
-    //   category: "Dark",
-    //   preview: ["#1A2520", "#0F1612", "#6B9B7F"],
-    // },
     carbonNoir: {
       menu: "#1C1C1E",
       main: "#0D0D0D",
@@ -83,38 +42,6 @@ function App() {
       category: "Dark",
       preview: ["#1C1C1E", "#0D0D0D", "#8E8E93"],
     },
-    // glassmorphism: {
-    //   menu: "#E8F0FE",
-    //   main: "#F8FBFF",
-    //   accent: "#4285F4",
-    //   name: "Glassmorphism Blue",
-    //   category: "Modern",
-    //   preview: ["#E8F0FE", "#F8FBFF", "#4285F4"],
-    // },
-    // neonCyber: {
-    //   menu: "#1A1A2E",
-    //   main: "#0F0F1E",
-    //   accent: "#00FFF5",
-    //   name: "Neon Cyber",
-    //   category: "Modern",
-    //   preview: ["#1A1A2E", "#0F0F1E", "#00FFF5"],
-    // },
-    // warmNeutral: {
-    //   menu: "#F5F1E8",
-    //   main: "#FEFAF5",
-    //   accent: "#D4A574",
-    //   name: "Warm Neutral",
-    //   category: "Modern",
-    //   preview: ["#F5F1E8", "#FEFAF5", "#D4A574"],
-    // },
-    // monochrome: {
-    //   menu: "#F5F5F7",
-    //   main: "#FFFFFF",
-    //   accent: "#000000",
-    //   name: "Pure Monochrome",
-    //   category: "Modern",
-    //   preview: ["#F5F5F7", "#FFFFFF", "#000000"],
-    // },
     sunsetGradient: {
       menu: "#FF6B9D",
       main: "#FFF0F5",
@@ -123,39 +50,11 @@ function App() {
       category: "Vibrant",
       preview: ["#FF6B9D", "#FFF0F5", "#C44569"],
     },
-    // tropicalVibe: {
-    //   menu: "#38B2AC",
-    //   main: "#F0FDFA",
-    //   accent: "#0F766E",
-    //   name: "Tropical Vibe",
-    //   category: "Vibrant",
-    //   preview: ["#38B2AC", "#F0FDFA", "#0F766E"],
-    // },
-    // royalGold: {
-    //   menu: "#2C1810",
-    //   main: "#0F0805",
-    //   accent: "#D4AF37",
-    //   name: "Royal Gold",
-    //   category: "Vibrant",
-    //   preview: ["#2C1810", "#0F0805", "#D4AF37"],
-    // },
-    // arcticMinimal: {
-    //   menu: "#E5F2FF",
-    //   main: "#F7FBFF",
-    //   accent: "#0EA5E9",
-    //   name: "Arctic Minimal",
-    //   category: "Vibrant",
-    //   preview: ["#E5F2FF", "#F7FBFF", "#0EA5E9"],
-    // },
   };
 
   const menuThemeColor = colorThemes[activeTheme].menu;
   const mainBgColor = colorThemes[activeTheme].main;
   const accentColor = colorThemes[activeTheme].accent;
-
-  useEffect(() => {
-    localStorage.setItem("activeTheme", activeTheme);
-  }, [activeTheme]);
 
   useEffect(() => {
     return () => {
@@ -209,16 +108,22 @@ function App() {
     }
   }, []);
 
-  const handleNavClick = useCallback(
-    (sectionId) => {
-      if (mainContentRef.current) {
-        mainContentRef.current.navigateToSection(sectionId);
-      }
+  const handleNavClick = useCallback((sectionId) => {
+    // Disable container transitions to prevent stutter
+    setDisableContainerTransition(true);
+    // Instantly close menu without animation to avoid conflict with zoom animation
+    setIsNavExpanded(false);
+    setIsNavAnimating(false);
+
+    // Start navigation after a frame to ensure state updates are applied
+    requestAnimationFrame(() => {
+      mainContentRef.current?.navigateToSection(sectionId);
       setActiveSection(sectionId);
-      closeNav();
-    },
-    [closeNav]
-  );
+
+      // Re-enable transitions after navigation completes
+      setTimeout(() => setDisableContainerTransition(false), 700);
+    });
+  }, []);
 
   const handleThemeChange = useCallback((themeName) => {
     setActiveTheme(themeName);
@@ -543,7 +448,11 @@ function App() {
 
       {/* Main Content */}
       <div
-        className={`relative transition-all duration-500 ease-in-out origin-top-left overflow-hidden ${
+        className={`relative origin-top-left overflow-hidden ${
+          disableContainerTransition
+            ? ""
+            : "transition-all duration-500 ease-in-out"
+        } ${
           isNavExpanded
             ? "sm:w-[calc(100%-420px)] sm:h-[calc(100vh-40px)] sm:translate-x-5 sm:translate-y-5 sm:rounded-2xl sm:shadow-2xl"
             : "w-full h-screen translate-x-0 translate-y-0 rounded-none"
