@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import MainContent from "./components/MainContent";
+import BackgroundGrid from "./components/BackgroundGrid";
 
 function App() {
   const [isNavExpanded, setIsNavExpanded] = useState(false);
@@ -176,7 +177,7 @@ function App() {
               if (index < iterations) return originalText[index];
               return characters[Math.floor(Math.random() * characters.length)];
             })
-            .join("")
+            .join(""),
         );
 
         iterations += 1 / 3;
@@ -388,16 +389,16 @@ function App() {
                     activeTheme === key
                       ? "scale-100 shadow-lg"
                       : hoveredTheme === key
-                      ? "scale-110 shadow-md"
-                      : "scale-95 shadow-sm"
+                        ? "scale-110 shadow-md"
+                        : "scale-95 shadow-sm"
                   }`}
                   style={{
                     boxShadow:
                       activeTheme === key
                         ? `0 0 0 2px ${accentColor}, 0 8px 16px rgba(0, 0, 0, 0.15)`
                         : hoveredTheme === key
-                        ? `0 0 0 2px ${theme.preview[2]}60, 0 4px 12px rgba(0, 0, 0, 0.1)`
-                        : "0 2px 4px rgba(0, 0, 0, 0.05)",
+                          ? `0 0 0 2px ${theme.preview[2]}60, 0 4px 12px rgba(0, 0, 0, 0.1)`
+                          : "0 2px 4px rgba(0, 0, 0, 0.05)",
                   }}
                 >
                   <PizzaThemeCircle
@@ -457,7 +458,13 @@ function App() {
             ? "sm:w-[calc(100%-420px)] sm:h-[calc(100vh-40px)] sm:translate-x-5 sm:translate-y-5 sm:rounded-2xl sm:shadow-2xl"
             : "w-full h-screen translate-x-0 translate-y-0 rounded-none"
         }`}
+        style={{ backgroundColor: mainBgColor }}
       >
+        {/* Background Grid - with z-index to ensure it doesn't overlap navbar */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <BackgroundGrid accentColor={accentColor} isDarkTheme={isDarkTheme} />
+        </div>
+
         <button
           onClick={toggleNav}
           onMouseEnter={handleMenuButtonHover}
@@ -546,7 +553,7 @@ function App() {
               closeNav();
             }
           }}
-          className="h-full w-full overflow-hidden rounded-inherit transition-colors duration-500"
+          className="relative z-10 h-full w-full overflow-hidden rounded-inherit transition-colors duration-500"
           style={{ backgroundColor: mainBgColor }}
         >
           <MainContent

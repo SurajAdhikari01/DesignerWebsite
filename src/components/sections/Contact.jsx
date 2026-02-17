@@ -258,7 +258,7 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
             }`}
           >
             <div
-              className="p-4 sm:p-6 rounded-2xl backdrop-blur-sm"
+              className="p-4 sm:p-6 rounded-2xl backdrop-blur-sm transition-all duration-500 hover:scale-[1.02] hover-lift"
               style={{
                 backgroundColor: isDarkTheme
                   ? "rgba(255, 255, 255, 0.05)"
@@ -268,6 +268,9 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                     ? "rgba(255, 255, 255, 0.1)"
                     : "rgba(0, 0, 0, 0.1)"
                 }`,
+                boxShadow: activeField
+                  ? `0 0 20px ${accentColor}33`
+                  : "none",
               }}
             >
               {/* Form Header */}
@@ -605,7 +608,7 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
 
             {/* Social Links */}
             <div
-              className="p-4 sm:p-6 rounded-2xl backdrop-blur-sm"
+              className="p-4 sm:p-6 rounded-2xl backdrop-blur-sm transition-all duration-500 hover:scale-[1.02] hover-lift"
               style={{
                 backgroundColor: isDarkTheme
                   ? "rgba(255, 255, 255, 0.05)"
@@ -630,7 +633,7 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg transition-all duration-300 hover:scale-105"
+                    className="group flex items-center gap-3 p-3 rounded-lg transition-all duration-300 hover:scale-110 hover-lift relative overflow-hidden"
                     style={{
                       backgroundColor: isDarkTheme
                         ? "rgba(255, 255, 255, 0.05)"
@@ -642,9 +645,18 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                       }`,
                     }}
                   >
-                    <span className="text-xl">{social.icon}</span>
+                    {/* Glow effect on hover */}
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{
+                        background: `radial-gradient(circle, ${accentColor}15, transparent)`,
+                      }}
+                    />
+                    <span className="text-xl relative z-10 group-hover:scale-125 transition-transform duration-300">
+                      {social.icon}
+                    </span>
                     <span
-                      className="text-sm font-mono"
+                      className="text-sm font-mono relative z-10"
                       style={{ color: textColor }}
                     >
                       {social.name}

@@ -389,15 +389,23 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                       style={{ transitionDelay: `${(idx + 1) * 150}ms` }}
                     >
                       <div
-                        className="relative h-full overflow-hidden transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-2xl"
+                        className="relative h-full overflow-hidden transition-all duration-500 group-hover:scale-[1.02] hover-lift"
                         style={{
                           "--glow-color":
                             project.primaryLanguage?.color || accentColor,
                         }}
                       >
+                        {/* Glowing border on hover */}
+                        <div
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                          style={{
+                            background: `radial-gradient(circle at 50% 0%, ${accentColor}30, transparent 70%)`,
+                          }}
+                        />
+
                         {/* Glassy Background Overlay */}
                         <div
-                          className="absolute inset-0 backdrop-blur-md"
+                          className="absolute inset-0 backdrop-blur-md z-0"
                           style={{
                             backgroundColor: isDarkTheme
                               ? "rgba(255, 255, 255, 0.05)"
@@ -409,10 +417,11 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                             }`,
                             clipPath:
                               "polygon(0 0, 0 calc(100% - 28px), 28px 100%, 100% 100%, 100% 28px, 75% 28px, 65% 0)",
+                            boxShadow: `inset 0 0 30px ${accentColor}08`,
                           }}
                         />
 
-                        <div className="relative p-6 flex flex-col h-full min-h-[280px]">
+                        <div className="relative z-10 p-6 flex flex-col h-full min-h-[280px]">
                           {/* Top Section: Title */}
                           <h3
                             className="text-lg font-bold mb-2 line-clamp-1"

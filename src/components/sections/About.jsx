@@ -11,15 +11,31 @@ const About = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
     setIsVisible(true);
   }, []);
 
-  const skills = [
-    { name: "React", level: 90, icon: "⚛️" },
-    { name: "JavaScript", level: 85, icon: "🟨" },
-    { name: "Node.js", level: 85, icon: "🟢" },
-    { name: "Python", level: 80, icon: "🐍" },
-    { name: "Swift", level: 75, icon: "🍎" },
-    { name: "Java", level: 75, icon: "☕" },
-    { name: "C++", level: 70, icon: "⚙️" },
-    { name: "C", level: 70, icon: "🔧" },
+  const skillCategories = [
+    {
+      category: "Frontend Development",
+      skills: ["React", "JavaScript", "TypeScript", "Tailwind CSS", "HTML5", "CSS3"]
+    },
+    {
+      category: "Backend Development",
+      skills: ["Node.js", "Express", "Python", "REST APIs", "GraphQL", "Database Design"]
+    },
+    {
+      category: "Native Development",
+      skills: ["Swift", "Java", "React Native", "Mobile UI/UX", "App Architecture"]
+    },
+    {
+      category: "Languages & Tools",
+      skills: ["C++", "C", "Git", "Linux", "Docker", "AWS"]
+    },
+    {
+      category: "AI & Machine Learning",
+      skills: ["Python", "TensorFlow", "Neural Networks", "Data Analysis", "ML Models"]
+    },
+    {
+      category: "Design & UX",
+      skills: ["UI Design", "Figma", "Prototyping", "User Research", "Design Systems"]
+    }
   ];
 
   const interests = [
@@ -430,9 +446,78 @@ const About = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
           </div>
         </div>
 
+        {/* Skills Section */}
+        <div
+          className={`mb-12 transition-all duration-1000 delay-400 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
+          <div className="flex items-center gap-4 mb-12">
+            <span className="text-sm font-mono" style={{ color: accentColor }}>
+              02.
+            </span>
+            <h3
+              className="text-2xl sm:text-3xl font-bold uppercase tracking-tight"
+              style={{ color: textColor }}
+            >
+              Expertise
+            </h3>
+            <div
+              className="flex-grow h-px"
+              style={{
+                background: `linear-gradient(to right, ${accentColor}40, transparent)`,
+              }}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {skillCategories.map((skillGroup, groupIdx) => (
+              <div
+                key={groupIdx}
+                className="stagger-item p-6 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-105 card-hover"
+                style={{
+                  backgroundColor: isDarkTheme
+                    ? "rgba(255, 255, 255, 0.05)"
+                    : "rgba(0, 0, 0, 0.03)",
+                  border: `1px solid ${
+                    isDarkTheme
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(0, 0, 0, 0.1)"
+                  }`,
+                }}
+              >
+                <div
+                  className="text-sm font-bold uppercase tracking-wider mb-4 pb-3"
+                  style={{
+                    color: accentColor,
+                    borderBottom: `1px solid ${accentColor}30`,
+                  }}
+                >
+                  {skillGroup.category}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {skillGroup.skills.map((skill, skillIdx) => (
+                    <span
+                      key={skillIdx}
+                      className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                      style={{
+                        backgroundColor: `${accentColor}15`,
+                        border: `1px solid ${accentColor}40`,
+                        color: accentColor,
+                      }}
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Stats Section */}
         <div
-          className={`grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12 transition-all duration-1000 delay-400 ${
+          className={`grid grid-cols-2 sm:grid-cols-4 gap-4 transition-all duration-1000 delay-500 ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >

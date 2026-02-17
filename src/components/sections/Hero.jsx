@@ -39,6 +39,15 @@ const Hero = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
     { baseSize: 250, duration: "15s", opacity: 0.1 },
   ];
 
+  const particles = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    size: Math.random() * 3 + 1,
+    delay: Math.random() * 2,
+    duration: Math.random() * 3 + 2,
+  }));
+
   return (
     <section
       ref={heroRef}
@@ -54,6 +63,27 @@ const Hero = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
         isDarkTheme={isDarkTheme}
         opacity={0.05}
       />
+      
+      {/* Animated particles background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {particles.map((particle) => (
+          <div
+            key={particle.id}
+            className="absolute rounded-full animate-float-slow"
+            style={{
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              backgroundColor: accentColor,
+              opacity: 0.3,
+              animationDelay: `${particle.delay}s`,
+              filter: `blur(${particle.size / 2}px)`,
+            }}
+          />
+        ))}
+      </div>
+
       {/* 3D Rotating Rings - Optimized & Responsive */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div
@@ -80,6 +110,7 @@ const Hero = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                   animationDuration: ring.duration,
                   borderColor: accentColor,
                   opacity: ring.opacity,
+                  boxShadow: `0 0 30px ${accentColor}66, inset 0 0 30px ${accentColor}33`,
                 }}
               />
             );
@@ -99,7 +130,7 @@ const Hero = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
           }}
         >
           <h1
-            className={`text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold mb-4 sm:mb-6 transition-all duration-1000 delay-300 ${
+            className={`text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-4 sm:mb-6 transition-all duration-1000 delay-300 animate-blur-in ${
               isVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-10"
@@ -107,11 +138,16 @@ const Hero = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
             style={{
               transform: `translateZ(100px)`,
               color: textColor,
+              background: `linear-gradient(135deg, ${textColor}, ${accentColor}, ${textColor})`,
+              backgroundSize: "200% 200%",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
             }}
           >
             <div className="relative inline-block mb-2">
               <span
-                className="relative font-bold"
+                className="relative font-black"
                 style={{
                   textShadow: `
                     1px 1px 0 ${accentColor}30,
@@ -131,7 +167,11 @@ const Hero = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
               <span
                 className="relative font-black tracking-tight"
                 style={{
-                  textShadow: createLongShadow(20), // Reduced shadow length for performance
+                  background: `linear-gradient(135deg, ${accentColor}, ${textColor})`,
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  textShadow: createLongShadow(20),
                 }}
               >
                 Suraj Adhikari
