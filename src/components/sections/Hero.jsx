@@ -63,7 +63,7 @@ const Hero = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
         isDarkTheme={isDarkTheme}
         opacity={0.05}
       />
-      
+
       {/* Animated particles background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {particles.map((particle) => (

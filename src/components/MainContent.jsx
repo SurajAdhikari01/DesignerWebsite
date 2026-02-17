@@ -1,4 +1,10 @@
-import { forwardRef, useImperativeHandle, useRef, useState, useEffect } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useEffect,
+} from "react";
 
 import Hero from "./sections/Hero";
 import About from "./sections/About";
@@ -20,9 +26,11 @@ const MainContent = forwardRef(
     useEffect(() => {
       const handleScroll = () => {
         if (containerRef.current) {
-          const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+          const { scrollTop, scrollHeight, clientHeight } =
+            containerRef.current;
           const totalScrollHeight = scrollHeight - clientHeight;
-          const progress = totalScrollHeight > 0 ? (scrollTop / totalScrollHeight) * 100 : 0;
+          const progress =
+            totalScrollHeight > 0 ? (scrollTop / totalScrollHeight) * 100 : 0;
           setScrollProgress(progress);
         }
       };

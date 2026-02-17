@@ -14,28 +14,60 @@ const About = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
   const skillCategories = [
     {
       category: "Frontend Development",
-      skills: ["React", "JavaScript", "TypeScript", "Tailwind CSS", "HTML5", "CSS3"]
+      skills: [
+        "React",
+        "JavaScript",
+        "TypeScript",
+        "Tailwind CSS",
+        "HTML5",
+        "CSS3",
+      ],
     },
     {
       category: "Backend Development",
-      skills: ["Node.js", "Express", "Python", "REST APIs", "GraphQL", "Database Design"]
+      skills: [
+        "Node.js",
+        "Express",
+        "Python",
+        "REST APIs",
+        "GraphQL",
+        "Database Design",
+      ],
     },
     {
       category: "Native Development",
-      skills: ["Swift", "Java", "React Native", "Mobile UI/UX", "App Architecture"]
+      skills: [
+        "Swift",
+        "Java",
+        "React Native",
+        "Mobile UI/UX",
+        "App Architecture",
+      ],
     },
     {
       category: "Languages & Tools",
-      skills: ["C++", "C", "Git", "Linux", "Docker", "AWS"]
+      skills: ["C++", "C", "Git", "Linux", "Docker", "AWS"],
     },
     {
       category: "AI & Machine Learning",
-      skills: ["Python", "TensorFlow", "Neural Networks", "Data Analysis", "ML Models"]
+      skills: [
+        "Python",
+        "TensorFlow",
+        "Neural Networks",
+        "Data Analysis",
+        "ML Models",
+      ],
     },
     {
       category: "Design & UX",
-      skills: ["UI Design", "Figma", "Prototyping", "User Research", "Design Systems"]
-    }
+      skills: [
+        "UI Design",
+        "Figma",
+        "Prototyping",
+        "User Research",
+        "Design Systems",
+      ],
+    },
   ];
 
   const interests = [

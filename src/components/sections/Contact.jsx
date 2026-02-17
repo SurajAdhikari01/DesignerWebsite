@@ -268,9 +268,7 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                     ? "rgba(255, 255, 255, 0.1)"
                     : "rgba(0, 0, 0, 0.1)"
                 }`,
-                boxShadow: activeField
-                  ? `0 0 20px ${accentColor}33`
-                  : "none",
+                boxShadow: activeField ? `0 0 20px ${accentColor}33` : "none",
               }}
             >
               {/* Form Header */}
@@ -315,8 +313,8 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                         activeField === "name"
                           ? accentColor
                           : isDarkTheme
-                          ? "rgba(255, 255, 255, 0.1)"
-                          : "rgba(0, 0, 0, 0.1)"
+                            ? "rgba(255, 255, 255, 0.1)"
+                            : "rgba(0, 0, 0, 0.1)"
                       }`,
                       boxShadow:
                         activeField === "name"
@@ -367,8 +365,8 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                         activeField === "email"
                           ? accentColor
                           : isDarkTheme
-                          ? "rgba(255, 255, 255, 0.1)"
-                          : "rgba(0, 0, 0, 0.1)"
+                            ? "rgba(255, 255, 255, 0.1)"
+                            : "rgba(0, 0, 0, 0.1)"
                       }`,
                       boxShadow:
                         activeField === "email"
@@ -419,8 +417,8 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                         activeField === "message"
                           ? accentColor
                           : isDarkTheme
-                          ? "rgba(255, 255, 255, 0.1)"
-                          : "rgba(0, 0, 0, 0.1)"
+                            ? "rgba(255, 255, 255, 0.1)"
+                            : "rgba(0, 0, 0, 0.1)"
                       }`,
                       boxShadow:
                         activeField === "message"
@@ -578,10 +576,10 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                         line.type === "system"
                           ? "#60A5FA"
                           : line.type === "error"
-                          ? "#EF4444"
-                          : line.type === "success"
-                          ? "#10B981"
-                          : "#FBBF24",
+                            ? "#EF4444"
+                            : line.type === "success"
+                              ? "#10B981"
+                              : "#FBBF24",
                     }}
                   >
                     <span className="opacity-40">

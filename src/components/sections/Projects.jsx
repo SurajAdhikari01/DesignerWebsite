@@ -82,8 +82,8 @@ const getActivityDescription = (event, accentColor) => {
         action === "opened"
           ? "Opened"
           : action === "closed" && pr?.merged
-          ? "Merged"
-          : capitalize(action) || "Updated";
+            ? "Merged"
+            : capitalize(action) || "Updated";
       return (
         <>
           {verb} PR in <span style={repoNameStyle}>{repoName}</span>
@@ -150,7 +150,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (sectionRef.current) {
@@ -211,7 +211,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
       const response = await axios.post(
         "https://api.github.com/graphql",
         { query, variables },
-        { headers }
+        { headers },
       );
 
       if (response?.data?.data?.user) {
@@ -231,7 +231,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
       try {
         if (!GITHUB_TOKEN) {
           console.warn(
-            "GitHub token is missing — pinned repos will not be fetched via GraphQL."
+            "GitHub token is missing — pinned repos will not be fetched via GraphQL.",
           );
           setProjects([]);
           setLoading(false);
@@ -240,7 +240,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
 
         const pinnedRepos = await fetchPinnedRepos(
           GITHUB_USERNAME,
-          GITHUB_TOKEN
+          GITHUB_TOKEN,
         );
 
         if (!Array.isArray(pinnedRepos) || pinnedRepos.length === 0) {
@@ -295,7 +295,7 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
           : {};
         const res = await axios.get(
           `https://api.github.com/users/${GITHUB_USERNAME}/events/public`,
-          { headers }
+          { headers },
         );
 
         if (Array.isArray(res?.data)) {
@@ -647,8 +647,8 @@ const Projects = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
                               idx === 0
                                 ? "#10B981"
                                 : idx === 1
-                                ? "#8B5CF6"
-                                : "#F59E0B",
+                                  ? "#8B5CF6"
+                                  : "#F59E0B",
                           }}
                         ></div>
                         <div>
