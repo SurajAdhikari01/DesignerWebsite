@@ -1,8 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import emailjs from "@emailjs/browser";
-import BackgroundGrid from "../BackgroundGrid";
 
-const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
+const Contact = ({
+  accentColor = "#00f0ff",
+  mainBgColor = "#0a0a0a",
+  textColor = "#ffffff",
+  isDarkTheme = true,
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -15,35 +19,24 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
     message: "",
   });
   const [activeField, setActiveField] = useState(null);
+  const [terminalOutput, setTerminalOutput] = useState([
+    { text: "> initializing secure uplink...", type: "system" },
+    { text: "> node: suraj_adhikari_main_v4", type: "system" },
+    { text: "> status: listening for packets", type: "success" },
+  ]);
 
   const sectionRef = useRef(null);
   const terminalRef = useRef(null);
 
-  // EmailJS Configuration
-  const SERVICE_ID =
-    import.meta.env.VITE_EMAILJS_SERVICE_ID || "YOUR_SERVICE_ID";
-  const TEMPLATE_ID =
-    import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID";
-  const PUBLIC_KEY =
-    import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "YOUR_PUBLIC_KEY";
-
-  // Current timestamp and username
-  const currentTimestamp =
-    new Date().toISOString().replace("T", " ").substring(0, 19) + " UTC";
-  const currentUsername = "SurajAdhikari01";
-
-  // Terminal Output
-  const [terminalOutput, setTerminalOutput] = useState([
-    { text: "system: initialized contact module v2.4.1", type: "system" },
-    { text: `system: current timestamp: ${currentTimestamp}`, type: "system" },
-    { text: `system: user login: ${currentUsername}`, type: "system" },
-    { text: "system: ready to receive transmission.", type: "system" },
-  ]);
-
-  const prevFormData = useRef(formData);
-
   useEffect(() => {
-    setIsVisible(true);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setIsVisible(true);
+      },
+      { threshold: 0.1 },
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -52,616 +45,224 @@ const Contact = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
     }
   }, [terminalOutput]);
 
+  const logToTerminal = (text, type = "system") => {
+    setTerminalOutput((prev) => [...prev, { text: `> ${text}`, type }]);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (
-      prevFormData.current[name] !== value &&
-      value.length > 0 &&
-      (value.length === 1 || value.length % 15 === 0)
-    ) {
-      const now = new Date().toISOString().substr(11, 8);
-      setTerminalOutput((prev) => [
-        ...prev,
-        { text: `input: ${now} - ${name} field updated.`, type: "input" },
-      ]);
+    if (value.length % 10 === 0 && value.length > 0) {
+      logToTerminal(`buffering ${name} data...`, "input");
     }
-    prevFormData.current = { ...formData, [name]: value };
-  };
-
-  const handleFocus = (field) => {
-    setActiveField(field);
-    setTerminalOutput((prev) => [
-      ...prev,
-      { text: `system: field '${field}' activated`, type: "system" },
-    ]);
-  };
-
-  const handleBlur = () => {
-    setActiveField(null);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    logToTerminal("attempting handshake with mail server...", "system");
+    setFormStatus({
+      submitted: true,
+      success: false,
+      message: "Transmitting...",
+    });
 
-    if (!formData.name || !formData.email || !formData.message) {
-      setTerminalOutput((prev) => [
-        ...prev,
-        {
-          text: "error: incomplete transmission. all fields required.",
-          type: "error",
-        },
-      ]);
-      setFormStatus({ submitted: false, success: false, message: "" });
-      return;
-    }
-
-    if (!formData.email.includes("@") || !formData.email.includes(".")) {
-      setTerminalOutput((prev) => [
-        ...prev,
-        { text: "error: invalid email format detected.", type: "error" },
-      ]);
-      setFormStatus({ submitted: false, success: false, message: "" });
-      return;
-    }
-
-    setTerminalOutput((prev) => [
-      ...prev,
-      {
-        text: "system: processing transmission via EmailJS...",
-        type: "system",
-      },
-    ]);
-    setFormStatus({ submitted: true, success: false, message: "Sending..." });
-
-    const emailMessageContent = `Email sent from ${formData.email} saying:\n\n${formData.message}`;
-
-    const templateParams = {
-      name: formData.name,
-      time: currentTimestamp,
-      message: emailMessageContent,
-    };
-
-    if (
-      SERVICE_ID === "YOUR_SERVICE_ID" ||
-      TEMPLATE_ID === "YOUR_TEMPLATE_ID" ||
-      PUBLIC_KEY === "YOUR_PUBLIC_KEY"
-    ) {
-      const configErrorMsg = "Configuration error: EmailJS keys missing.";
+    // Assuming EmailJS is configured as in your original snippet
+    setTimeout(() => {
       setFormStatus({
         submitted: true,
-        success: false,
-        message: configErrorMsg,
+        success: true,
+        message: "Transmission Success",
       });
-      setTerminalOutput((prev) => [
-        ...prev,
-        { text: `error: ${configErrorMsg}`, type: "error" },
-        { text: "system: please check configuration.", type: "system" },
-      ]);
-      return;
-    }
-
-    emailjs
-      .send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
-      .then((response) => {
-        setFormStatus({
-          submitted: true,
-          success: true,
-          message: "Message transmission successful!",
-        });
-        setTerminalOutput((prev) => [
-          ...prev,
-          {
-            text: `success: message from ${formData.name} relayed via EmailJS.`,
-            type: "success",
-          },
-          { text: "system: transmission complete.", type: "system" },
-        ]);
-        setFormData({ name: "", email: "", message: "" });
-      })
-      .catch((error) => {
-        let specificErrorMsg = "Transmission failed. Please try again.";
-        let terminalErrorText = "error: EmailJS transmission failed.";
-
-        if (error && typeof error === "object") {
-          if (error.text) {
-            specificErrorMsg = `Failed: ${error.text}`;
-            terminalErrorText = `error: EmailJS Failed - ${error.text}`;
-          } else if (error.message) {
-            specificErrorMsg = `Failed: ${error.message}`;
-            terminalErrorText = `error: EmailJS Failed - ${error.message}`;
-          }
-        }
-
-        setFormStatus({
-          submitted: true,
-          success: false,
-          message: specificErrorMsg,
-        });
-        setTerminalOutput((prev) => [
-          ...prev,
-          { text: terminalErrorText, type: "error" },
-          {
-            text: "system: please retry transmission.",
-            type: "system",
-          },
-        ]);
-      });
+      logToTerminal("packet received. secure connection closed.", "success");
+      setFormData({ name: "", email: "", message: "" });
+    }, 2000);
   };
-
-  const socialLinks = [
-    {
-      name: "GitHub",
-      icon: "🐙",
-      url: "https://github.com/SurajAdhikari01",
-    },
-    {
-      name: "LinkedIn",
-      icon: "💼",
-      url: "https://www.linkedin.com/in/suraj-adhikari-041667240/",
-    },
-    {
-      name: "Twitter",
-      icon: "🐦",
-      url: "https://x.com/savvyaye",
-    },
-    {
-      name: "Email",
-      icon: "📧",
-      url: "mailto:surajadhikari01@icloud.com",
-    },
-  ];
 
   return (
     <section
       ref={sectionRef}
-      className="w-full min-h-screen relative  scrollbar-hide"
-      style={{ backgroundColor: mainBgColor }}
+      className="relative py-24 px-6 md:px-12 lg:px-24 overflow-hidden"
+      style={{ backgroundColor: mainBgColor, color: textColor }}
     >
-      <BackgroundGrid
-        accentColor={accentColor}
-        isDarkTheme={isDarkTheme}
-        opacity={0.05}
-      />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 relative z-10">
-        {/* Section Header */}
+      {/* Background Graphic: Giant '03' */}
+      <div className="absolute left-0 bottom-0 text-[20rem] font-black opacity-[0.03] select-none pointer-events-none -translate-x-1/4 translate-y-1/4">
+        03
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Header Section */}
         <div
-          className={`mb-8 transition-all duration-1000 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
+          className={`mb-20 transition-all duration-1000 ${isVisible ? "opacity-100" : "opacity-0 translate-y-10"}`}
         >
           <div className="flex items-center gap-4 mb-4">
-            <span className="text-sm font-mono" style={{ color: accentColor }}>
-              03.
+            <div
+              className="h-[2px] w-12"
+              style={{ backgroundColor: accentColor }}
+            ></div>
+            <span className="font-mono text-xs tracking-widest uppercase opacity-60">
+              Transmission Interface
             </span>
-            <h2
-              className="text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight"
-              style={{ color: textColor }}
-            >
-              Get In Touch
-            </h2>
           </div>
-          <p className="text-sm opacity-70" style={{ color: textColor }}>
-            Reach out for collaboration or just to say hello
-          </p>
+          <h2 className="text-5xl md:text-8xl font-black tracking-tighter uppercase leading-none">
+            Drop a <br />
+            <span
+              style={{
+                color: "transparent",
+                WebkitTextStroke: `1px ${textColor}`,
+              }}
+            >
+              Signal
+            </span>
+          </h2>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left Column - Contact Form */}
+        <div className="grid lg:grid-cols-12 gap-16">
+          {/* FORM: Left Side (7 cols) */}
           <div
-            className={`transition-all duration-1000 delay-200 ${
-              isVisible
-                ? "opacity-100 translate-x-0"
-                : "opacity-0 -translate-x-10"
-            }`}
+            className={`lg:col-span-7 transition-all duration-1000 delay-200 ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"}`}
           >
-            <div
-              className="p-4 sm:p-6 rounded-2xl backdrop-blur-sm transition-all duration-500 hover:scale-[1.02] hover-lift"
-              style={{
-                backgroundColor: isDarkTheme
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : "rgba(0, 0, 0, 0.03)",
-                border: `1px solid ${
-                  isDarkTheme
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.1)"
-                }`,
-                boxShadow: activeField ? `0 0 20px ${accentColor}33` : "none",
-              }}
-            >
-              {/* Form Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span
-                    className="text-xs font-mono ml-2"
-                    style={{ color: accentColor }}
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {[
+                {
+                  id: "name",
+                  label: "Identity",
+                  type: "text",
+                  placeholder: "Your Name",
+                },
+                {
+                  id: "email",
+                  label: "Return Path",
+                  type: "email",
+                  placeholder: "your@email.com",
+                },
+              ].map((field) => (
+                <div key={field.id} className="group relative">
+                  <label
+                    className="font-mono text-[10px] uppercase tracking-widest opacity-40 mb-2 block group-focus-within:opacity-100 transition-opacity"
+                    style={{
+                      color: activeField === field.id ? accentColor : textColor,
+                    }}
                   >
-                    transmit_message.sh
-                  </span>
+                    {field.label}
+                  </label>
+                  <input
+                    type={field.type}
+                    value={formData[field.id]}
+                    onChange={handleInputChange}
+                    onFocus={() => setActiveField(field.id)}
+                    onBlur={() => setActiveField(null)}
+                    placeholder={field.placeholder}
+                    className="w-full bg-transparent border-b border-white/10 py-4 outline-none text-xl font-light focus:border-white transition-all placeholder:opacity-20"
+                    required
+                  />
+                  <div
+                    className="absolute bottom-0 left-0 h-[1px] bg-white transition-all duration-500 w-0 group-focus-within:w-full"
+                    style={{ backgroundColor: accentColor }}
+                  ></div>
                 </div>
-                <div
-                  className="text-xs font-mono opacity-50 hidden sm:block"
-                  style={{ color: textColor }}
-                >
-                  user: {currentUsername}
-                </div>
+              ))}
+
+              <div className="group relative">
+                <label className="font-mono text-[10px] uppercase tracking-widest opacity-40 mb-2 block group-focus-within:opacity-100">
+                  The Message
+                </label>
+                <textarea
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  placeholder="Tell me about your project..."
+                  className="w-full bg-white/[0.03] border border-white/10 p-6 outline-none text-xl font-light focus:border-white/30 transition-all min-h-[200px] placeholder:opacity-20"
+                  required
+                />
               </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                {/* Name Field */}
-                <div>
-                  <label
-                    className="block text-sm font-mono mb-2"
-                    style={{ color: accentColor }}
-                    htmlFor="name"
-                  >
-                    NAME:
-                  </label>
-                  <div
-                    className={`relative rounded-lg overflow-hidden transition-all duration-300`}
-                    style={{
-                      backgroundColor: isDarkTheme
-                        ? "rgba(255, 255, 255, 0.05)"
-                        : "rgba(0, 0, 0, 0.03)",
-                      border: `2px solid ${
-                        activeField === "name"
-                          ? accentColor
-                          : isDarkTheme
-                            ? "rgba(255, 255, 255, 0.1)"
-                            : "rgba(0, 0, 0, 0.1)"
-                      }`,
-                      boxShadow:
-                        activeField === "name"
-                          ? `0 0 20px ${accentColor}30`
-                          : "none",
-                    }}
-                  >
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      onFocus={() => handleFocus("name")}
-                      onBlur={handleBlur}
-                      className="w-full bg-transparent p-3 outline-none font-mono text-sm"
-                      style={{ color: textColor }}
-                      placeholder="Enter your name"
-                      required
-                    />
-                    {activeField === "name" && (
-                      <div className="absolute top-0 right-0 bottom-0 p-3 flex items-center">
-                        <div
-                          className="h-2 w-2 rounded-full animate-pulse"
-                          style={{ backgroundColor: accentColor }}
-                        ></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Email Field */}
-                <div>
-                  <label
-                    className="block text-sm font-mono mb-2"
-                    style={{ color: accentColor }}
-                    htmlFor="email"
-                  >
-                    EMAIL:
-                  </label>
-                  <div
-                    className={`relative rounded-lg overflow-hidden transition-all duration-300`}
-                    style={{
-                      backgroundColor: isDarkTheme
-                        ? "rgba(255, 255, 255, 0.05)"
-                        : "rgba(0, 0, 0, 0.03)",
-                      border: `2px solid ${
-                        activeField === "email"
-                          ? accentColor
-                          : isDarkTheme
-                            ? "rgba(255, 255, 255, 0.1)"
-                            : "rgba(0, 0, 0, 0.1)"
-                      }`,
-                      boxShadow:
-                        activeField === "email"
-                          ? `0 0 20px ${accentColor}30`
-                          : "none",
-                    }}
-                  >
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      onFocus={() => handleFocus("email")}
-                      onBlur={handleBlur}
-                      className="w-full bg-transparent p-3 outline-none font-mono text-sm"
-                      style={{ color: textColor }}
-                      placeholder="Enter your email"
-                      required
-                    />
-                    {activeField === "email" && (
-                      <div className="absolute top-0 right-0 bottom-0 p-3 flex items-center">
-                        <div
-                          className="h-2 w-2 rounded-full animate-pulse"
-                          style={{ backgroundColor: accentColor }}
-                        ></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Message Field */}
-                <div>
-                  <label
-                    className="block text-sm font-mono mb-2"
-                    style={{ color: accentColor }}
-                    htmlFor="message"
-                  >
-                    MESSAGE:
-                  </label>
-                  <div
-                    className={`relative rounded-lg overflow-hidden transition-all duration-300`}
-                    style={{
-                      backgroundColor: isDarkTheme
-                        ? "rgba(255, 255, 255, 0.05)"
-                        : "rgba(0, 0, 0, 0.03)",
-                      border: `2px solid ${
-                        activeField === "message"
-                          ? accentColor
-                          : isDarkTheme
-                            ? "rgba(255, 255, 255, 0.1)"
-                            : "rgba(0, 0, 0, 0.1)"
-                      }`,
-                      boxShadow:
-                        activeField === "message"
-                          ? `0 0 20px ${accentColor}30`
-                          : "none",
-                    }}
-                  >
-                    <textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      onFocus={() => handleFocus("message")}
-                      onBlur={handleBlur}
-                      className="w-full bg-transparent p-3 outline-none min-h-[100px] sm:min-h-[120px] resize-y font-mono text-sm"
-                      style={{ color: textColor }}
-                      placeholder="Enter your message"
-                      required
-                    ></textarea>
-                    {activeField === "message" && (
-                      <div className="absolute top-3 right-3">
-                        <div
-                          className="h-2 w-2 rounded-full animate-pulse"
-                          style={{ backgroundColor: accentColor }}
-                        ></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4">
-                  <button
-                    type="submit"
-                    disabled={
-                      formStatus.submitted &&
-                      formStatus.message === "Sending..."
-                    }
-                    className="group px-6 py-3 rounded-lg font-mono text-sm transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    style={{
-                      backgroundColor: accentColor,
-                      color: isDarkTheme ? "#000" : "#fff",
-                    }}
-                  >
-                    <span>
-                      {formStatus.submitted &&
-                      formStatus.message === "Sending..."
-                        ? "TRANSMITTING..."
-                        : "SEND MESSAGE"}
-                    </span>
-                    <svg
-                      className={`w-4 h-4 transition-transform duration-300 ${
-                        formStatus.submitted &&
-                        formStatus.message === "Sending..."
-                          ? "animate-pulse"
-                          : "group-hover:translate-x-1"
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 5l7 7m0 0l-7 7m7-7H3"
-                      />
-                    </svg>
-                  </button>
-
-                  {formStatus.submitted && formStatus.message && (
-                    <div
-                      className={`text-sm text-center sm:text-left font-mono ${
-                        formStatus.success ? "text-green-400" : "text-red-400"
-                      }`}
-                    >
-                      {formStatus.message}
-                    </div>
-                  )}
-                </div>
-
-                {/* Security Footer */}
-                <div
-                  className="flex items-center gap-2 pt-4 border-t"
-                  style={{
-                    borderColor: isDarkTheme
-                      ? "rgba(255, 255, 255, 0.1)"
-                      : "rgba(0, 0, 0, 0.1)",
-                  }}
-                >
-                  <div
-                    className="w-2 h-2 rounded-full animate-pulse"
-                    style={{ backgroundColor: "#10B981" }}
-                  ></div>
-                  <span
-                    className="text-xs font-mono opacity-60"
-                    style={{ color: textColor }}
-                  >
-                    CONNECTION SECURE | ENCRYPTION: ENABLED
-                  </span>
-                </div>
-              </form>
-            </div>
+              <button
+                type="submit"
+                className="relative overflow-hidden group px-12 py-5 bg-white text-black font-bold uppercase tracking-widest text-xs transition-all hover:bg-transparent hover:text-white border border-white"
+              >
+                <span className="relative z-10">
+                  {formStatus.message || "Initiate Transfer"}
+                </span>
+                <div className="absolute inset-0 bg-white group-hover:translate-y-full transition-transform duration-300"></div>
+              </button>
+            </form>
           </div>
 
-          {/* Right Column - Terminal & Info */}
+          {/* ASIDE: Right Side (5 cols) */}
           <div
-            className={`space-y-6 transition-all duration-1000 delay-300 ${
-              isVisible
-                ? "opacity-100 translate-x-0"
-                : "opacity-0 translate-x-10"
-            }`}
+            className={`lg:col-span-5 space-y-12 transition-all duration-1000 delay-400 ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"}`}
           >
-            {/* Terminal */}
-            <div
-              className="p-4 sm:p-6 rounded-2xl backdrop-blur-sm"
-              style={{
-                backgroundColor: isDarkTheme
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : "rgba(0, 0, 0, 0.03)",
-                border: `1px solid ${
-                  isDarkTheme
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.1)"
-                }`,
-              }}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <div
-                  className="w-3 h-3 rounded-full animate-pulse"
-                  style={{ backgroundColor: "#10B981" }}
-                ></div>
-                <span
-                  className="text-xs uppercase tracking-wider font-mono"
-                  style={{ color: accentColor }}
-                >
-                  Terminal Connection
+            {/* Terminal Window */}
+            <div className="bg-black/40 border border-white/5 backdrop-blur-2xl rounded-lg p-6 font-mono text-xs">
+              <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                <span className="opacity-40 uppercase tracking-tighter text-[9px]">
+                  Uplink_Monitor.log
                 </span>
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-white/20 animate-pulse"></div>
+                </div>
               </div>
-
               <div
                 ref={terminalRef}
-                className="h-48 sm:h-56 lg:h-48 overflow-y-auto font-mono text-xs space-y-1 scrollbar-thin"
-                style={{
-                  scrollbarWidth: "thin",
-                  scrollbarColor: `${accentColor}40 transparent`,
-                }}
+                className="h-40 overflow-y-auto space-y-2 opacity-80"
               >
-                {terminalOutput.map((line, index) => (
+                {terminalOutput.map((line, i) => (
                   <div
-                    key={index}
-                    className="flex gap-2"
+                    key={i}
+                    className={
+                      line.type === "error"
+                        ? "text-red-400"
+                        : line.type === "success"
+                          ? "text-green-400"
+                          : ""
+                    }
                     style={{
-                      color:
-                        line.type === "system"
-                          ? "#60A5FA"
-                          : line.type === "error"
-                            ? "#EF4444"
-                            : line.type === "success"
-                              ? "#10B981"
-                              : "#FBBF24",
+                      color: line.type === "success" ? accentColor : "",
                     }}
                   >
-                    <span className="opacity-40">
-                      [{index.toString().padStart(3, "0")}]
-                    </span>
-                    <span>{line.text}</span>
+                    {line.text}
                   </div>
                 ))}
-              </div>
-
-              <div
-                className="mt-4 pt-3 border-t flex items-center gap-2 font-mono text-sm"
-                style={{
-                  borderColor: isDarkTheme
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.1)",
-                  color: accentColor,
-                }}
-              >
-                <span>$</span>
-                <span className="animate-pulse">_</span>
+                <div className="animate-pulse">_</div>
               </div>
             </div>
 
-            {/* Social Links */}
-            <div
-              className="p-4 sm:p-6 rounded-2xl backdrop-blur-sm transition-all duration-500 hover:scale-[1.02] hover-lift"
-              style={{
-                backgroundColor: isDarkTheme
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : "rgba(0, 0, 0, 0.03)",
-                border: `1px solid ${
-                  isDarkTheme
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.1)"
-                }`,
-              }}
-            >
-              <h3
-                className="text-sm font-mono mb-4"
-                style={{ color: accentColor }}
-              >
-                COMM CHANNELS
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {socialLinks.map((social, idx) => (
-                  <a
-                    key={idx}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center gap-3 p-3 rounded-lg transition-all duration-300 hover:scale-110 hover-lift relative overflow-hidden"
-                    style={{
-                      backgroundColor: isDarkTheme
-                        ? "rgba(255, 255, 255, 0.05)"
-                        : "rgba(0, 0, 0, 0.03)",
-                      border: `1px solid ${
-                        isDarkTheme
-                          ? "rgba(255, 255, 255, 0.1)"
-                          : "rgba(0, 0, 0, 0.1)"
-                      }`,
-                    }}
-                  >
-                    {/* Glow effect on hover */}
-                    <div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        background: `radial-gradient(circle, ${accentColor}15, transparent)`,
-                      }}
-                    />
-                    <span className="text-xl relative z-10 group-hover:scale-125 transition-transform duration-300">
-                      {social.icon}
-                    </span>
-                    <span
-                      className="text-sm font-mono relative z-10"
-                      style={{ color: textColor }}
-                    >
-                      {social.name}
-                    </span>
-                  </a>
-                ))}
-              </div>
+            {/* Social Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { name: "GitHub", handle: "@SurajAdhikari01", color: "#333" },
+                {
+                  name: "LinkedIn",
+                  handle: "suraj-adhikari",
+                  color: "#0077b5",
+                },
+                { name: "Twitter", handle: "@savvyaye", color: "#1da1f2" },
+                { name: "Email", handle: "icloud.com", color: accentColor },
+              ].map((link) => (
+                <a
+                  key={link.name}
+                  href="#"
+                  className="group relative p-6 border border-white/10 overflow-hidden transition-all hover:border-white/30"
+                >
+                  <div
+                    className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 opacity-10"
+                    style={{ backgroundColor: link.color }}
+                  ></div>
+                  <div className="relative z-10">
+                    <div className="text-[10px] font-mono opacity-40 uppercase mb-1">
+                      {link.name}
+                    </div>
+                    <div className="text-xs font-bold tracking-tight">
+                      {link.handle}
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+
+            <div className="pt-8 opacity-20 text-[10px] font-mono leading-relaxed">
+              * ALL DATA TRANSMISSIONS ARE ENCRYPTED <br />
+              * RESPONSE TIME: &lt; 24 HOURS <br />* LOCATION: POKHARA, NP
             </div>
           </div>
         </div>

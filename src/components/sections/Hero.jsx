@@ -1,276 +1,219 @@
-import { useState, useEffect, useRef } from "react";
-import BackgroundGrid from "../BackgroundGrid";
+import React, { useState, useEffect, useRef } from "react";
 
-const Hero = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isVisible, setIsVisible] = useState(false);
-  const heroRef = useRef(null);
+// Helper for the scramble effect
+const ScrambleText = ({ text, delay = 0, className, style }) => {
+  const [display, setDisplay] = useState("");
+  const [finished, setFinished] = useState(false);
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
 
   useEffect(() => {
-    setIsVisible(true);
-  }, []);
+    let timeout;
+    let iteration = 0;
+
+    // Start delay
+    const startTimeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        setDisplay(
+          text
+            .split("")
+            .map((letter, index) => {
+              if (index < iteration) {
+                return text[index];
+              }
+              return chars[Math.floor(Math.random() * chars.length)];
+            })
+            .join(""),
+        );
+
+        if (iteration >= text.length) {
+          clearInterval(interval);
+          setFinished(true);
+        }
+
+        iteration += 1 / 3; // Speed of decoding
+      }, 30);
+
+      return () => clearInterval(interval);
+    }, delay);
+
+    return () => {
+      clearTimeout(startTimeout);
+    };
+  }, [text, delay]);
+
+  return (
+    <span className={className} style={style}>
+      {display}
+    </span>
+  );
+};
+
+const Hero = ({
+  accentColor = "#00f0ff",
+  mainBgColor = "#0a0a0a",
+  textColor = "#ffffff",
+  isDarkTheme = true,
+}) => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
 
   const handleMouseMove = (e) => {
-    // Disable mouse move effect on touch devices to save performance
-    if ("ontouchstart" in window) return;
-    const rect = heroRef.current?.getBoundingClientRect();
-    if (rect) {
-      const x = (e.clientX - rect.left - rect.width / 2) / rect.width;
-      const y = (e.clientY - rect.top - rect.height / 2) / rect.height;
-      setMousePosition({ x, y });
-    }
+    if (!containerRef.current) return;
+    const { left, top } = containerRef.current.getBoundingClientRect();
+    setMousePosition({
+      x: e.clientX - left,
+      y: e.clientY - top,
+    });
   };
-
-  const createLongShadow = (length = 30) => {
-    let shadow = "";
-    const baseOpacity = isDarkTheme ? 0.15 : 0.05;
-    for (let i = 1; i <= length; i++) {
-      const opacity = baseOpacity - (i / length) * baseOpacity * 0.5;
-      shadow += `${i}px ${i}px 0 ${accentColor}${Math.round(opacity * 255)
-        .toString(16)
-        .padStart(2, "0")}${i < length ? "," : ""}`;
-    }
-    return shadow;
-  };
-
-  const rings = [
-    { baseSize: 500, duration: "30s", opacity: 0.05 },
-    { baseSize: 375, duration: "20s", opacity: 0.08 },
-    { baseSize: 250, duration: "15s", opacity: 0.1 },
-  ];
-
-  const particles = Array.from({ length: 15 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    size: Math.random() * 3 + 1,
-    delay: Math.random() * 2,
-    duration: Math.random() * 3 + 2,
-  }));
 
   return (
     <section
-      ref={heroRef}
+      ref={containerRef}
       onMouseMove={handleMouseMove}
-      className="w-full h-screen relative flex items-center justify-center overflow-hidden"
-      style={{
-        backgroundColor: mainBgColor,
-        perspective: "1000px",
-      }}
+      className="relative w-full h-screen flex flex-col justify-center overflow-hidden selection:bg-white selection:text-black"
+      style={{ backgroundColor: mainBgColor }}
     >
-      <BackgroundGrid
-        accentColor={accentColor}
-        isDarkTheme={isDarkTheme}
-        opacity={0.05}
+      {/* 1. Cinematic Noise Overlay (Adds texture/professionalism) */}
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none z-50 mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      ></div>
+
+      {/* 2. The Grid Background (Hidden by default, revealed by Spotlight) */}
+      <div
+        className="absolute inset-0 z-0 opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, ${textColor}15 1px, transparent 1px),
+            linear-gradient(to bottom, ${textColor}15 1px, transparent 1px)
+          `,
+          backgroundSize: "4rem 4rem",
+          maskImage: `radial-gradient(circle 400px at ${mousePosition.x}px ${mousePosition.y}px, black 0%, transparent 100%)`,
+          WebkitMaskImage: `radial-gradient(circle 400px at ${mousePosition.x}px ${mousePosition.y}px, black 0%, transparent 100%)`,
+        }}
       />
 
-      {/* Animated particles background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {particles.map((particle) => (
-          <div
-            key={particle.id}
-            className="absolute rounded-full animate-float-slow"
-            style={{
-              left: `${particle.left}%`,
-              top: `${particle.top}%`,
-              width: `${particle.size}px`,
-              height: `${particle.size}px`,
-              backgroundColor: accentColor,
-              opacity: 0.3,
-              animationDelay: `${particle.delay}s`,
-              filter: `blur(${particle.size / 2}px)`,
-            }}
-          />
-        ))}
-      </div>
+      {/* 3. The Spotlight Glow Effect */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, ${accentColor}15, transparent 40%)`,
+        }}
+      />
 
-      {/* 3D Rotating Rings - Optimized & Responsive */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div
-          className="relative transition-transform duration-300 ease-out"
-          style={{
-            transform: `rotateX(${mousePosition.y * 10}deg) rotateY(${
-              mousePosition.x * 10
-            }deg)`,
-            transformStyle: "preserve-3d",
-          }}
-        >
-          {rings.map((ring, i) => {
-            const size = `min(${ring.baseSize}px, 80vw)`;
-            return (
-              <div
-                key={i}
-                className="absolute inset-0 rounded-full border animate-spin-slow"
-                style={{
-                  width: size,
-                  height: size,
-                  left: "50%",
-                  top: "50%",
-                  transform: "translate(-50%, -50%)",
-                  animationDuration: ring.duration,
-                  borderColor: accentColor,
-                  opacity: ring.opacity,
-                  boxShadow: `0 0 30px ${accentColor}66, inset 0 0 30px ${accentColor}33`,
-                }}
-              />
-            );
-          })}
+      {/* 4. Abstract Geometric Decorations (Floating) */}
+      <div
+        className="absolute top-20 right-10 md:right-32 w-24 h-24 md:w-48 md:h-48 border border-current opacity-10 rounded-full mix-blend-difference animate-spin-slow"
+        style={{ color: accentColor }}
+      />
+      <div
+        className="absolute bottom-20 left-10 md:left-32 w-32 h-32 md:w-64 md:h-64 border border-current opacity-10 rounded-full mix-blend-difference animate-spin-reverse-slow"
+        style={{ color: textColor }}
+      />
+
+      {/* 5. Main Content Area */}
+      <div className="relative z-10 px-6 md:px-20 lg:px-32 w-full max-w-screen-2xl mx-auto">
+        {/* Intro Tag */}
+        <div className="mb-6 flex items-center gap-4 overflow-hidden">
+          <div
+            className="h-[1px] w-12 bg-current opacity-50"
+            style={{ color: accentColor }}
+          ></div>
+          <span
+            className="text-sm md:text-base font-mono tracking-widest uppercase opacity-60"
+            style={{ color: textColor }}
+          >
+            Portfolio 2026
+          </span>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center">
+        {/* Massive Name Typography */}
+        <h1
+          className="text-6xl md:text-8xl lg:text-[9rem] font-black leading-[0.9] tracking-tighter mb-8"
+          style={{ color: textColor }}
+        >
+          <div className="block overflow-hidden">
+            <span className="block opacity-50 text-2xl md:text-4xl font-light font-mono mb-2 text-transparent bg-clip-text bg-gradient-to-r from-current to-transparent">
+              &lt;Hello /&gt; I am
+            </span>
+          </div>
+          <div className="block">
+            {/* The Scramble Effect Component */}
+            <ScrambleText text="SURAJ" delay={500} className="block" />
+          </div>
+          <div className="block relative">
+            <ScrambleText
+              text="ADHIKARI"
+              delay={1200}
+              style={{
+                color: "transparent",
+                WebkitTextStroke: `2px ${textColor}`,
+              }} // Outline effect
+              className="block opacity-80"
+            />
+            {/* Accent color blur behind text */}
+            <div
+              className="absolute -top-10 -left-10 w-full h-full blur-3xl opacity-20 -z-10"
+              style={{ backgroundColor: accentColor }}
+            ></div>
+          </div>
+        </h1>
+
+        {/* Role & Description - Aligned Right/Bottom for asymmetry */}
         <div
-          className="transition-transform duration-300 ease-out"
+          className="flex flex-col md:flex-row justify-between items-end gap-8 mt-12 border-t pt-8 opacity-0 animate-fade-in-up"
           style={{
-            transform: `rotateX(${mousePosition.y * -3}deg) rotateY(${
-              mousePosition.x * 3
-            }deg) translateZ(50px)`,
-            transformStyle: "preserve-3d",
+            borderColor: `${textColor}20`,
+            animationDelay: "2s",
+            animationFillMode: "forwards",
           }}
         >
-          <h1
-            className={`text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-4 sm:mb-6 transition-all duration-1000 delay-300 animate-blur-in ${
-              isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
-            }`}
-            style={{
-              transform: `translateZ(100px)`,
-              color: textColor,
-              background: `linear-gradient(135deg, ${textColor}, ${accentColor}, ${textColor})`,
-              backgroundSize: "200% 200%",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            <div className="relative inline-block mb-2">
-              <span
-                className="relative font-black"
-                style={{
-                  textShadow: `
-                    1px 1px 0 ${accentColor}30,
-                    2px 2px 0 ${accentColor}28,
-                    3px 3px 0 ${accentColor}20,
-                    4px 4px 0 ${accentColor}18,
-                    5px 5px 0 ${accentColor}10,
-                    6px 6px 0 ${accentColor}08
-                  `,
-                }}
-              >
-                Hi, I'm
-              </span>
-            </div>
-            <br />
-            <div className="relative inline-block">
-              <span
-                className="relative font-black tracking-tight"
-                style={{
-                  background: `linear-gradient(135deg, ${accentColor}, ${textColor})`,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  textShadow: createLongShadow(20),
-                }}
-              >
-                Suraj Adhikari
-              </span>
-            </div>
-          </h1>
-
-          <div
-            className={`mb-8 sm:mb-10 transition-all duration-1000 delay-500 ${
-              isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
-            }`}
-            style={{
-              transform: `translateZ(80px)`,
-            }}
-          >
+          <div className="max-w-md">
             <p
-              className="text-lg sm:text-xl md:text-3xl font-light tracking-wide mb-2"
-              style={{
-                textShadow: `1px 1px 0 ${accentColor}15`,
-                color: `${textColor}cc`,
-              }}
+              className="text-lg md:text-xl font-light leading-relaxed"
+              style={{ color: `${textColor}90` }}
             >
-              <span className="inline-block animate-wave origin-bottom-right">
-                ✨
-              </span>{" "}
-              Creative Developer{" "}
-              <span className="inline-block animate-wave origin-bottom-right animation-delay-200">
-                &
-              </span>{" "}
-              Designer
+              A creative developer building digital experiences that blend{" "}
+              <strong style={{ color: accentColor }}>visual aesthetics</strong>{" "}
+              with{" "}
+              <strong style={{ color: accentColor }}>
+                technical performance
+              </strong>
+              .
             </p>
           </div>
 
-          <p
-            className={`text-sm sm:text-base md:text-xl max-w-3xl mx-auto mb-10 leading-relaxed transition-all duration-1000 delay-700 ${
-              isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
-            }`}
-            style={{
-              transform: `translateZ(60px)`,
-              color: `${textColor}b3`,
-            }}
-          >
-            Crafting beautiful, interactive experiences with modern web
-            technologies. Transforming ideas into pixel-perfect reality.
-          </p>
-
-          <div
-            className={`flex flex-col sm:flex-row gap-4 justify-center items-center transition-all duration-1000 delay-900 ${
-              isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
-            }`}
-            style={{
-              transform: `translateZ(80px)`,
-            }}
-          ></div>
-        </div>
-
-        {/* Floating 3D Objects - Simplified for mobile */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[
-            {
-              style: "top-10 left-4 sm:top-20 sm:left-10",
-              size: "w-12 h-12 sm:w-16 sm:h-16",
-              delay: "0s",
-              z: mousePosition.x * 50,
-            },
-            {
-              style: "bottom-20 right-4 sm:bottom-32 sm:right-16",
-              size: "w-10 h-10 sm:w-12 sm:h-12",
-              delay: "1s",
-              z: mousePosition.y * -50,
-            },
-            {
-              style: "top-1/3 right-5 sm:right-20",
-              size: "w-16 h-16 sm:w-20 sm:h-20",
-              delay: "2s",
-              z: mousePosition.x * -30,
-            },
-          ].map((item, i) => (
-            <div
-              key={i}
-              className={`absolute ${item.style} animate-float-slow opacity-10 transition-opacity`}
-              style={{
-                animationDelay: item.delay,
-                transform: `translateZ(${item.z}px)`,
-              }}
-            >
-              <div
-                className={`${item.size} border-2 rounded-lg transform rotate-45 animate-spin-very-slow`}
-                style={{ borderColor: accentColor }}
-              />
+          <div className="flex flex-col items-end">
+            <div className="text-right mb-2">
+              <span
+                className="block text-xs uppercase tracking-widest opacity-50 mb-1"
+                style={{ color: textColor }}
+              >
+                Current Status
+              </span>
+              <span
+                className="flex items-center gap-2 text-sm font-bold"
+                style={{ color: accentColor }}
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-current"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
+                </span>
+                Available for work
+              </span>
             </div>
-          ))}
+          </div>
         </div>
+      </div>
+
+      {/* Decorative 'Scroll' Indicator */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
+        <div
+          className="w-[1px] h-12 bg-gradient-to-b from-transparent via-current to-transparent"
+          style={{ color: textColor }}
+        ></div>
       </div>
     </section>
   );

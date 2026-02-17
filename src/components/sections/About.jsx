@@ -1,587 +1,293 @@
-import { useState, useEffect, useRef } from "react";
-import BackgroundGrid from "../BackgroundGrid";
+import React, { useState, useEffect, useRef } from "react";
 
-const About = ({ accentColor, mainBgColor, textColor, isDarkTheme }) => {
+const About = ({
+  accentColor = "#00f0ff",
+  mainBgColor = "#0a0a0a",
+  textColor = "#ffffff",
+  isDarkTheme = true,
+}) => {
+  const [activeModule, setActiveModule] = useState(0); // Default open first module
   const [isVisible, setIsVisible] = useState(false);
-  const [activeSkill, setActiveSkill] = useState(null);
-  const [activeTab, setActiveTab] = useState("bio");
   const sectionRef = useRef(null);
 
   useEffect(() => {
-    setIsVisible(true);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 },
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
   }, []);
 
-  const skillCategories = [
+  const skillModules = [
     {
-      category: "Frontend Development",
-      skills: [
+      id: "01",
+      name: "Frontend Architecture",
+      description:
+        "Building responsive, pixel-perfect interfaces with modern reactivity.",
+      stack: [
         "React",
-        "JavaScript",
         "TypeScript",
+        "Next.js",
         "Tailwind CSS",
-        "HTML5",
-        "CSS3",
+        "Three.js",
+        "Framer Motion",
       ],
     },
     {
-      category: "Backend Development",
-      skills: [
-        "Node.js",
-        "Express",
-        "Python",
-        "REST APIs",
-        "GraphQL",
-        "Database Design",
-      ],
+      id: "02",
+      name: "Backend Engineering",
+      description: "Designing scalable APIs and robust server-side logic.",
+      stack: ["Node.js", "Python", "PostgreSQL", "GraphQL", "Redis", "Docker"],
     },
     {
-      category: "Native Development",
-      skills: [
-        "Swift",
-        "Java",
-        "React Native",
-        "Mobile UI/UX",
-        "App Architecture",
-      ],
-    },
-    {
-      category: "Languages & Tools",
-      skills: ["C++", "C", "Git", "Linux", "Docker", "AWS"],
-    },
-    {
-      category: "AI & Machine Learning",
-      skills: [
-        "Python",
+      id: "03",
+      name: "AI & Intelligence",
+      description:
+        "Integrating machine learning models for smarter applications.",
+      stack: [
         "TensorFlow",
-        "Neural Networks",
-        "Data Analysis",
-        "ML Models",
+        "OpenAI API",
+        "LangChain",
+        "Hugging Face",
+        "Pandas",
       ],
     },
     {
-      category: "Design & UX",
-      skills: [
-        "UI Design",
-        "Figma",
-        "Prototyping",
-        "User Research",
-        "Design Systems",
-      ],
+      id: "04",
+      name: "Mobile & Native",
+      description: "Crafting performant cross-platform mobile experiences.",
+      stack: ["React Native", "Swift", "Expo", "Mobile UI/UX"],
     },
   ];
-
-  const interests = [
-    {
-      icon: "🤖",
-      title: "AI & ML",
-      description: "Machine learning & neural networks",
-    },
-    {
-      icon: "🌐",
-      title: "Open Source",
-      description: "Contributing to community projects",
-    },
-    {
-      icon: "📚",
-      title: "Tech Learning",
-      description: "Latest and greatest in tech space",
-    },
-    {
-      icon: "🎬",
-      title: "Movies",
-      description: "New movies and series",
-    },
-  ];
-
-  const stats = [
-    { number: "Full Stack", label: "Developer" },
-    { number: "AI/ML", label: "Enthusiast" },
-    { number: "App Dev", label: "Specialist" },
-    { number: "Online", label: "Status" },
-  ];
-
-  const tabs = {
-    bio: {
-      title: "BIO",
-      content:
-        "Full-stack and native application developer with a passion for AI and machine learning. I build websites and applications that combines elegant design with powerful functionality.",
-    },
-    focus: {
-      title: "FOCUS AREAS",
-      content:
-        "Web Development | UI/UX Design | App Development | AI/ML | Full Stack Solutions",
-    },
-    interests: {
-      title: "INTERESTS",
-      content: "AI, Open Source Development, Learning New Technologies, Movies",
-    },
-  };
 
   return (
     <section
       ref={sectionRef}
-      className="w-full min-h-screen relative scrollbar-hide"
-      style={{ backgroundColor: mainBgColor }}
+      className="relative w-full min-h-screen py-24 px-6 md:px-12 lg:px-24 overflow-hidden selection:bg-white selection:text-black"
+      style={{ backgroundColor: mainBgColor, color: textColor }}
     >
-      <BackgroundGrid
-        accentColor={accentColor}
-        isDarkTheme={isDarkTheme}
-        opacity={0.05}
+      {/* 1. Background Texture (Consistent with Hero) */}
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 relative z-10">
-        {/* Section Header */}
-        <div
-          className={`mb-8 transition-all duration-1000 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <span className="text-sm font-mono" style={{ color: accentColor }}>
-              01.
-            </span>
-            <h2
-              className="text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight"
-              style={{ color: textColor }}
-            >
-              About Me
+
+      {/* Decorative Grid Lines */}
+      <div
+        className="absolute left-12 top-0 bottom-0 w-[1px] opacity-10 pointer-events-none hidden lg:block"
+        style={{ backgroundColor: textColor }}
+      ></div>
+      <div
+        className="absolute right-12 top-0 bottom-0 w-[1px] opacity-10 pointer-events-none hidden lg:block"
+        style={{ backgroundColor: textColor }}
+      ></div>
+
+      <div className="max-w-7xl mx-auto relative z-10 flex flex-col lg:flex-row gap-16 lg:gap-24">
+        {/* LEFT COLUMN: Sticky Header & Visual */}
+        <div className="lg:w-1/3 flex flex-col justify-between h-auto lg:h-[80vh] lg:sticky lg:top-24">
+          <div>
+            <div className="flex items-center gap-4 mb-8">
+              <span className="font-mono text-sm tracking-widest opacity-60">
+                /// 01. PROFILE
+              </span>
+              <div
+                className="h-[1px] flex-grow opacity-20"
+                style={{ backgroundColor: textColor }}
+              ></div>
+            </div>
+
+            <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-8">
+              Who <br />
+              <span
+                style={{
+                  color: "transparent",
+                  WebkitTextStroke: `1px ${textColor}`,
+                  opacity: 0.7,
+                }}
+              >
+                I Am
+              </span>
             </h2>
+
+            {/* The "Mind" Visualization - CSS Wireframe Sphere */}
+            <div className="relative w-48 h-48 md:w-64 md:h-64 mt-8 opacity-80">
+              <div
+                className="absolute inset-0 rounded-full border border-dashed animate-spin-slow opacity-20"
+                style={{ borderColor: accentColor }}
+              ></div>
+              <div
+                className="absolute inset-4 rounded-full border border-dotted animate-spin-reverse-slow opacity-40"
+                style={{ borderColor: textColor }}
+              ></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div
+                  className="w-2 h-2 rounded-full animate-ping"
+                  style={{ backgroundColor: accentColor }}
+                ></div>
+              </div>
+              {/* Floating Code Snippet Effect */}
+              <div
+                className="absolute -right-10 top-1/2 p-2 rounded bg-black/50 backdrop-blur-md border text-[10px] font-mono opacity-60"
+                style={{ borderColor: `${accentColor}40`, color: accentColor }}
+              >
+                {`{ status: "online" }`}
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden lg:block">
+            <div
+              className="text-xs font-mono opacity-40 tracking-widest rotate-180"
+              style={{ writingMode: "vertical-rl" }}
+            >
+              SCROLL TO DECRYPT DATA
+            </div>
           </div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
-          {/* Left Column - Profile Card */}
+        {/* RIGHT COLUMN: Content Stream */}
+        <div className="lg:w-2/3 pt-4 lg:pt-0">
+          {/* The Manifesto / Bio */}
           <div
-            className={`transition-all duration-1000 delay-200 ${
-              isVisible
-                ? "opacity-100 translate-x-0"
-                : "opacity-0 -translate-x-10"
-            }`}
+            className={`transition-all duration-1000 ease-out mb-20 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}
           >
-            <div
-              className="p-5 sm:p-6 rounded-2xl backdrop-blur-sm h-full"
-              style={{
-                backgroundColor: isDarkTheme
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : "rgba(0, 0, 0, 0.03)",
-                border: `1px solid ${
-                  isDarkTheme
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.1)"
-                }`,
-              }}
-            >
-              <div
-                className="text-xs opacity-50 mb-4 font-mono"
-                style={{ color: accentColor }}
-              >
-                {">"} executing profile.sh
-              </div>
+            <p className="text-xl md:text-3xl font-light leading-relaxed">
+              I am a{" "}
+              <span className="font-semibold" style={{ color: accentColor }}>
+                Full-Stack Engineer
+              </span>{" "}
+              obsessed with the intersection of design and logic.
+            </p>
+            <p className="mt-6 text-lg md:text-xl opacity-70 leading-relaxed font-light">
+              While others see code as just syntax, I see it as the raw material
+              for digital architecture. I don't just build applications; I craft{" "}
+              <strong className="text-white">resilient ecosystems</strong> where
+              AI meets intuitive human interfaces. My goal is to transform
+              complex technical requirements into seamless, elegant user
+              experiences.
+            </p>
 
-              <div className="relative mb-6">
-                <div
-                  className="w-24 h-24 mx-auto rounded-full overflow-hidden relative flex items-center justify-center"
-                  style={{
-                    backgroundColor: `${accentColor}20`,
-                  }}
-                >
-                  <span className="text-5xl opacity-80">👨‍💻</span>
-                </div>
-                <div
-                  className="absolute bottom-1 right-1/3 sm:right-1/2 sm:translate-x-[60px] w-4 h-4 bg-green-500 rounded-full border-4 animate-pulse"
-                  style={{ borderColor: mainBgColor }}
-                />
-              </div>
-
-              <div className="text-center mb-6">
-                <h3
-                  className="text-2xl font-bold mb-2"
-                  style={{ color: textColor }}
-                >
-                  Suraj Adhikari
-                </h3>
-                <p
-                  className="text-sm uppercase tracking-widest mb-1"
-                  style={{ color: accentColor }}
-                >
-                  Developer
-                </p>
-                <p
-                  className="text-xs opacity-60 font-mono"
-                  style={{ color: textColor }}
-                >
-                  @SurajAdhikari01
-                </p>
-              </div>
-
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between items-center">
-                  <span
-                    className="text-sm font-mono"
-                    style={{ color: accentColor }}
-                  >
-                    NAME:
-                  </span>
-                  <span className="text-sm" style={{ color: textColor }}>
-                    Suraj Adhikari
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span
-                    className="text-sm font-mono"
-                    style={{ color: accentColor }}
-                  >
-                    ROLE:
-                  </span>
-                  <span className="text-sm" style={{ color: textColor }}>
-                    Developer
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span
-                    className="text-sm font-mono"
-                    style={{ color: accentColor }}
-                  >
-                    FOCUS:
-                  </span>
-                  <span
-                    className="text-sm text-right"
+            <div className="mt-8 flex flex-wrap gap-8">
+              {[
+                { label: "Experience", val: "4+ Years" },
+                { label: "Projects", val: "30+ Delivered" },
+                { label: "Coffee", val: "∞ Consumed" },
+              ].map((stat, i) => (
+                <div key={i}>
+                  <div
+                    className="text-3xl font-bold font-mono"
                     style={{ color: textColor }}
                   >
-                    Full Stack, AI, App Dev
-                  </span>
+                    {stat.val}
+                  </div>
+                  <div className="text-xs uppercase tracking-wider opacity-50 mt-1">
+                    {stat.label}
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span
-                    className="text-sm font-mono"
-                    style={{ color: accentColor }}
-                  >
-                    STATUS:
-                  </span>
-                  <span
-                    className="text-sm animate-pulse"
-                    style={{ color: "#10B981" }}
-                  >
-                    ONLINE
-                  </span>
-                </div>
-              </div>
-
-              <div
-                className="flex justify-center gap-2 pt-4 border-t"
-                style={{
-                  borderColor: isDarkTheme
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                {[
-                  {
-                    icon: "💼",
-                    href: "https://linkedin.com/in/SurajAdhikari01",
-                  },
-                  { icon: "📧", href: "mailto:contact@suraj.dev" },
-                  { icon: "🐙", href: "https://github.com/SurajAdhikari01" },
-                  { icon: "🐦", href: "https://twitter.com/SurajAdhikari01" },
-                ].map((social, idx) => (
-                  <a
-                    key={idx}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm"
-                    style={{
-                      backgroundColor: isDarkTheme
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "rgba(0, 0, 0, 0.05)",
-                      border: `1px solid ${
-                        isDarkTheme
-                          ? "rgba(255, 255, 255, 0.1)"
-                          : "rgba(0, 0, 0, 0.1)"
-                      }`,
-                    }}
-                  >
-                    <span className="text-lg">{social.icon}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Tabbed Content */}
-          <div
-            className={`transition-all duration-1000 delay-300 ${
-              isVisible
-                ? "opacity-100 translate-x-0"
-                : "opacity-0 translate-x-10"
-            }`}
-          >
-            {/* Tabs */}
-            <div
-              className="flex mb-4 p-1 rounded-xl backdrop-blur-sm"
-              style={{
-                backgroundColor: isDarkTheme
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : "rgba(0, 0, 0, 0.03)",
-                border: `1px solid ${
-                  isDarkTheme
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.1)"
-                }`,
-              }}
-            >
-              {Object.keys(tabs).map((tab) => (
-                <button
-                  key={tab}
-                  className={`flex-1 px-3 py-2 text-xs sm:text-sm font-mono rounded-lg transition-all duration-300 ${
-                    activeTab === tab
-                      ? "scale-105"
-                      : "opacity-60 hover:opacity-100"
-                  }`}
-                  style={{
-                    backgroundColor:
-                      activeTab === tab ? accentColor : "transparent",
-                    color:
-                      activeTab === tab
-                        ? isDarkTheme
-                          ? "#000"
-                          : "#fff"
-                        : textColor,
-                  }}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tabs[tab].title}
-                </button>
               ))}
             </div>
-
-            {/* Tab Content */}
-            <div
-              className="p-5 sm:p-6 rounded-xl backdrop-blur-sm"
-              style={{
-                backgroundColor: isDarkTheme
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : "rgba(0, 0, 0, 0.03)",
-                border: `1px solid ${
-                  isDarkTheme
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.1)"
-                }`,
-              }}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <div
-                  className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"
-                  style={{ animationDelay: "0.5s" }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-green-500 rounded-full animate-pulse"
-                  style={{ animationDelay: "1s" }}
-                ></div>
-                <div
-                  className="text-xs opacity-50 ml-2 font-mono"
-                  style={{ color: textColor }}
-                >
-                  {tabs[activeTab].title.toLowerCase()}.dat
-                </div>
-              </div>
-
-              <div style={{ color: textColor }}>
-                <p className="text-sm leading-relaxed mb-4">
-                  {tabs[activeTab].content}
-                </p>
-
-                {activeTab === "focus" && (
-                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 mt-6">
-                    {[
-                      "React",
-                      "Node.js",
-                      "Python",
-                      "Swift",
-                      "Java",
-                      "JavaScript",
-                      "C++",
-                      "C",
-                    ].map((skill) => (
-                      <div
-                        key={skill}
-                        className="p-3 rounded-lg text-center text-sm transition-all duration-300 hover:scale-105"
-                        style={{
-                          backgroundColor: `${accentColor}15`,
-                          border: `1px solid ${accentColor}30`,
-                          color: accentColor,
-                        }}
-                      >
-                        {skill}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {activeTab === "bio" && (
-                  <div
-                    className="mt-6 pt-4 border-t"
-                    style={{
-                      borderColor: isDarkTheme
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "rgba(0, 0, 0, 0.1)",
-                    }}
-                  >
-                    <div
-                      className="text-sm italic opacity-70"
-                      style={{ color: textColor }}
-                    >
-                      "Exploring the intersection of web development,
-                      applications and artificial intelligence to build
-                      meaningful software"
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "interests" && (
-                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {interests.map((interest, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 rounded-lg transition-all duration-300 hover:scale-105"
-                        style={{
-                          backgroundColor: isDarkTheme
-                            ? "rgba(255, 255, 255, 0.05)"
-                            : "rgba(0, 0, 0, 0.03)",
-                          border: `1px solid ${
-                            isDarkTheme
-                              ? "rgba(255, 255, 255, 0.1)"
-                              : "rgba(0, 0, 0, 0.1)"
-                          }`,
-                        }}
-                      >
-                        <div className="text-2xl mb-2">{interest.icon}</div>
-                        <div
-                          className="text-sm font-semibold mb-1"
-                          style={{ color: accentColor }}
-                        >
-                          {interest.title}
-                        </div>
-                        <div
-                          className="text-xs opacity-70"
-                          style={{ color: textColor }}
-                        >
-                          {interest.description}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Skills Section */}
-        <div
-          className={`mb-12 transition-all duration-1000 delay-400 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-        >
-          <div className="flex items-center gap-4 mb-12">
-            <span className="text-sm font-mono" style={{ color: accentColor }}>
-              02.
-            </span>
-            <h3
-              className="text-2xl sm:text-3xl font-bold uppercase tracking-tight"
-              style={{ color: textColor }}
-            >
-              Expertise
-            </h3>
-            <div
-              className="flex-grow h-px"
-              style={{
-                background: `linear-gradient(to right, ${accentColor}40, transparent)`,
-              }}
-            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {skillCategories.map((skillGroup, groupIdx) => (
+          {/* The "System Modules" (Skills Accordion) */}
+          <div className="relative">
+            <div className="flex items-center gap-4 mb-8 opacity-50">
               <div
-                key={groupIdx}
-                className="stagger-item p-6 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-105 card-hover"
-                style={{
-                  backgroundColor: isDarkTheme
-                    ? "rgba(255, 255, 255, 0.05)"
-                    : "rgba(0, 0, 0, 0.03)",
-                  border: `1px solid ${
-                    isDarkTheme
-                      ? "rgba(255, 255, 255, 0.1)"
-                      : "rgba(0, 0, 0, 0.1)"
-                  }`,
-                }}
-              >
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: accentColor }}
+              ></div>
+              <span className="font-mono text-xs tracking-widest uppercase">
+                System Capabilities / Tech Stack
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {skillModules.map((module, index) => (
                 <div
-                  className="text-sm font-bold uppercase tracking-wider mb-4 pb-3"
-                  style={{
-                    color: accentColor,
-                    borderBottom: `1px solid ${accentColor}30`,
-                  }}
+                  key={module.id}
+                  className="group relative border-b last:border-0 pb-4 transition-all duration-300"
+                  style={{ borderColor: `${textColor}15` }}
+                  onMouseEnter={() => setActiveModule(index)}
                 >
-                  {skillGroup.category}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {skillGroup.skills.map((skill, skillIdx) => (
+                  {/* Module Header */}
+                  <div className="flex items-start justify-between cursor-pointer py-4">
+                    <div className="flex items-baseline gap-6">
+                      <span
+                        className="font-mono text-sm opacity-30 group-hover:opacity-100 transition-opacity"
+                        style={{
+                          color:
+                            activeModule === index ? accentColor : textColor,
+                        }}
+                      >
+                        /{module.id}
+                      </span>
+                      <h3
+                        className={`text-2xl md:text-3xl font-bold transition-all duration-300 ${activeModule === index ? "translate-x-2" : ""}`}
+                        style={{
+                          color:
+                            activeModule === index ? accentColor : textColor,
+                        }}
+                      >
+                        {module.name}
+                      </h3>
+                    </div>
+                    {/* Arrow Indicator */}
                     <span
-                      key={skillIdx}
-                      className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                      className={`text-2xl transition-transform duration-300 ${activeModule === index ? "rotate-45" : ""}`}
                       style={{
-                        backgroundColor: `${accentColor}15`,
-                        border: `1px solid ${accentColor}40`,
-                        color: accentColor,
+                        color:
+                          activeModule === index
+                            ? accentColor
+                            : `${textColor}40`,
                       }}
                     >
-                      {skill}
+                      ↗
                     </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                  </div>
 
-        {/* Stats Section */}
-        <div
-          className={`grid grid-cols-2 sm:grid-cols-4 gap-4 transition-all duration-1000 delay-500 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-        >
-          {stats.map((stat, idx) => (
-            <div
-              key={idx}
-              className="text-center p-3 sm:p-4 rounded-xl transition-all duration-300 hover:scale-105 backdrop-blur-sm"
-              style={{
-                backgroundColor: isDarkTheme
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : "rgba(0, 0, 0, 0.03)",
-                border: `1px solid ${
-                  isDarkTheme
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.1)"
-                }`,
-              }}
-            >
-              <div
-                className="text-base sm:text-lg font-bold mb-1"
-                style={{ color: accentColor }}
-              >
-                {stat.number}
-              </div>
-              <div
-                className="text-xs uppercase tracking-wider opacity-70"
-                style={{ color: textColor }}
-              >
-                {stat.label}
-              </div>
+                  {/* Module Content (Expanded) */}
+                  <div
+                    className={`overflow-hidden transition-all duration-500 ease-in-out ${activeModule === index ? "max-h-48 opacity-100" : "max-h-0 opacity-0"}`}
+                  >
+                    <div className="pl-12 pt-2 pb-6">
+                      <p className="text-sm md:text-base opacity-70 mb-4 max-w-lg">
+                        {module.description}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {module.stack.map((tech) => (
+                          <span
+                            key={tech}
+                            className="px-3 py-1 text-xs md:text-sm font-mono border rounded-full"
+                            style={{
+                              borderColor: `${textColor}20`,
+                              backgroundColor: `${textColor}05`,
+                              color: textColor,
+                            }}
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
