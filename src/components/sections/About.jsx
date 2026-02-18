@@ -4,173 +4,192 @@ import { Code, Server, Brain, Smartphone } from "lucide-react";
 
 const About = ({
   accentColor = "#00f0ff",
-  mainBgColor = "#0a0a0a",
+  mainBgColor = "#050505",
   textColor = "#ffffff",
 }) => {
   const skills = [
-    {
-      label: "Frontend",
-      icon: Code,
-      tools: ["React", "TypeScript", "Next.js", "Tailwind", "Three.js"],
-    },
+    { label: "Frontend", icon: Code, tools: ["React", "Next.js", "Three.js"] },
     {
       label: "Backend",
       icon: Server,
-      tools: ["Node.js", "Python", "PostgreSQL", "GraphQL", "Docker"],
+      tools: ["Node.js", "PostgreSQL", "Docker"],
     },
     {
-      label: "AI / ML",
+      label: "Intelligence",
       icon: Brain,
-      tools: ["TensorFlow", "OpenAI", "LangChain", "Hugging Face"],
+      tools: ["TensorFlow", "LangChain", "OpenAI"],
     },
-    {
-      label: "Mobile",
-      icon: Smartphone,
-      tools: ["React Native", "Swift", "Expo"],
-    },
+    { label: "Mobile", icon: Smartphone, tools: ["React Native", "Expo"] },
   ];
 
   return (
     <section
       id="about"
-      className="relative w-full min-h-screen py-32 px-6 md:px-12 lg:px-24 flex items-center"
+      className="relative w-full min-h-screen py-32 px-6 md:px-12 lg:px-24 flex items-center overflow-hidden"
       style={{ backgroundColor: mainBgColor, color: textColor }}
     >
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-        {/* LEFT COLUMN: Sticky Visuals */}
-        <div className="lg:sticky lg:top-32">
+      {/* 1. MASSIVE BACKGROUND TEXT "IDENTITY" - Bleeding off the left */}
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-[35%] rotate-90 select-none pointer-events-none z-0">
+        <span
+          className="text-[18rem] md:text-[25rem] font-black uppercase leading-none tracking-tighter opacity-[0.03]"
+          style={{ WebkitTextStroke: `2px ${textColor}`, color: "transparent" }}
+        >
+          Identity
+        </span>
+      </div>
+
+      {/* 2. BACKGROUND 01 ANCHOR */}
+      <div className="absolute top-10 right-10 select-none pointer-events-none z-0">
+        <span className="text-[20rem] font-black opacity-[0.02] italic leading-none">
+          01
+        </span>
+      </div>
+
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-center relative z-10">
+        {/* IMAGE BLOCK: Columns 1-5 */}
+        <div className="lg:col-span-5 relative group">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1 }}
             viewport={{ once: true }}
             className="relative"
           >
-            {/* Clean Profile Image */}
-            <div className="relative z-10 w-full aspect-square max-w-md rounded-2xl overflow-hidden bg-white/5 border border-white/10">
+            {/* The Main Image Container */}
+            <div className="relative z-10 aspect-[4/5] w-full overflow-hidden border border-white/10  hover:grayscale-0 transition-all duration-1000 ease-in-out">
               <img
                 src="https://github.com/SurajAdhikari01.png"
                 alt="Suraj Adhikari"
-                className="w-full h-full object-cover grayscale-50 opacity-90 hover:grayscale-0 hover:opacity-100 transition-all duration-700"
+                className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-1000"
               />
-
-              {/* Minimal Overlay Gradient */}
+              {/* Scanline Effect */}
               <div
-                className="absolute inset-0 pointer-events-none"
+                className="absolute inset-0 pointer-events-none opacity-20"
                 style={{
-                  background: `linear-gradient(to top, \${mainBgColor} 0%, transparent 50%)`,
+                  backgroundImage: `linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))`,
+                  backgroundSize: "100% 2px, 3px 100%",
                 }}
               />
             </div>
 
-            {/* Decorative Minimal Frame using Accent Color */}
+            {/* Geometric Floating Frame (Brutalist Style) */}
             <div
-              className="absolute -inset-4 border-r-2 z-0   opacity-20"
+              className="absolute -top-6 -right-6 w-full h-full border-2 z-0 translate-x-3 translate-y-3 transition-transform duration-500 group-hover:translate-x-0 group-hover:translate-y-0"
+              style={{ borderColor: accentColor }}
+            />
+
+            {/* Corner Markers */}
+            <div
+              className="absolute -bottom-4 -left-4 w-12 h-12 border-l-2 border-b-2"
               style={{ borderColor: accentColor }}
             />
           </motion.div>
         </div>
 
-        {/* RIGHT COLUMN: Minimal Typography & Skills */}
-        <div className="pt-8 lg:pt-0">
+        {/* CONTENT BLOCK: Columns 7-12 */}
+        <div className="lg:col-span-6 lg:col-start-7 flex flex-col justify-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <div className="flex items-center gap-4 mb-8">
-              <span className="font-mono text-sm tracking-widest opacity-60">
-                /// 01. ABOUT
-              </span>
+            {/* Minimal Header */}
+            <div className="flex items-center gap-6 mb-12">
               <div
-                className="h-[1px] flex-grow opacity-20"
-                style={{ backgroundColor: textColor }}
-              ></div>
+                className="h-[2px] w-16"
+                style={{ backgroundColor: accentColor }}
+              />
+              <span className="font-mono text-xs tracking-[0.5em] uppercase opacity-40">
+                Biography
+              </span>
             </div>
 
-            <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-8">
-              Software <br />
+            <h2 className="text-7xl md:text-9xl font-black uppercase tracking-tighter leading-[0.8] mb-10">
+              Software
+              <br />
               <span
                 style={{
                   color: "transparent",
-                  WebkitTextStroke: "1px " + textColor,
-                  opacity: 0.7,
+                  WebkitTextStroke: `1.5px ${textColor}`,
                 }}
+                className="opacity-50"
               >
-                Engineer.
+                Engineer
               </span>
             </h2>
 
-            <p className="text-lg opacity-60 leading-relaxed mb-12 max-w-xl font-light">
-              I seamlessly merge technical logic with design aesthetics. My work
-              isn't just about writing code, it's about building resilient,
-              user-centric interfaces that feel clean.
+            <p
+              className="text-xl opacity-50 font-light leading-relaxed mb-16 border-l-2 pl-8"
+              style={{ borderColor: `${accentColor}40` }}
+            >
+              Synthesizing complex logic into elegant digital experiences. I
+              don't just build software; I engineer systems that live at the
+              intersection of performance and visual impact.
             </p>
 
-            {/* Minimal Stats Grid */}
-            <div
-              className="grid grid-cols-3 gap-8 mb-16 border-t border-b py-8"
-              style={{ borderColor: "rgba(255,255,255,0.05)" }}
-            >
+            {/* STATS MATRIX */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-12 mb-20">
               {[
-                { label: "Years Exp.", value: "04+" },
-                { label: "Projects", value: "30+" },
-                { label: "Clients", value: "12+" },
+                { label: "Systems Built", value: "30+" },
+                { label: "Experience", value: "04Y" },
+                { label: "Stack", value: "Full" },
               ].map((stat, i) => (
-                <div key={i}>
+                <div key={i} className="relative group">
                   <div
-                    className="text-3xl font-mono font-medium"
-                    style={{ color: accentColor }}
+                    className="text-4xl font-black italic group-hover:not-italic transition-all"
+                    style={{ color: textColor }}
                   >
                     {stat.value}
                   </div>
-                  <div className="text-xs uppercase tracking-widest opacity-40 mt-1">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.3em] opacity-30 mt-2">
                     {stat.label}
                   </div>
+                  <div
+                    className="absolute -bottom-2 left-0 w-0 h-[2px] bg-white group-hover:w-full transition-all duration-500"
+                    style={{ backgroundColor: accentColor }}
+                  />
                 </div>
               ))}
             </div>
 
-            {/* Clean Skills Grid */}
-            <div className="space-y-10">
-              <h3 className="text-sm font-mono uppercase tracking-widest opacity-40 mb-6">
-                Technologies
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-                {skills.map((skill, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                    viewport={{ once: true }}
+            {/* TECH CATEGORIES */}
+            <div className="space-y-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-12 gap-x-8">
+                {skills.map((skill, idx) => (
+                  <div
+                    key={idx}
+                    className="border-t border-white/10 pt-6 group"
                   >
                     <div className="flex items-center gap-3 mb-4">
                       <skill.icon
-                        className="w-5 h-5 opacity-70"
+                        className="w-4 h-4"
                         style={{ color: accentColor }}
                       />
-                      <span className="font-medium text-lg">{skill.label}</span>
+                      <span className="font-mono text-xs uppercase tracking-widest opacity-80 group-hover:opacity-100">
+                        {skill.label}
+                      </span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-x-4 gap-y-2">
                       {skill.tools.map((tool) => (
                         <span
                           key={tool}
-                          className="text-sm opacity-50 hover:opacity-100 transition-opacity cursor-default"
+                          className="text-sm font-light opacity-40 group-hover:opacity-100 transition-opacity"
                         >
-                          {tool} <span className="opacity-20 mx-1">/</span>
+                          {tool}
                         </span>
                       ))}
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
           </motion.div>
         </div>
       </div>
+
+      {/* 3. DECORATIVE DATA LINE */}
+      <div className="absolute bottom-10 left-10 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
     </section>
   );
 };

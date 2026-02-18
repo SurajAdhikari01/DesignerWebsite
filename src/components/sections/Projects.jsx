@@ -213,17 +213,15 @@ const Projects = ({
           backgroundImage: "",
         }}
       />
-
-      {/* Decorative Grid Lines */}
-      <div
-        className="absolute left-6 md:left-12 top-0 bottom-0 w-[1px] opacity-10 pointer-events-none hidden lg:block"
-        style={{ backgroundColor: textColor }}
-      ></div>
-      <div
-        className="absolute right-6 md:right-12 top-0 bottom-0 w-[1px] opacity-10 pointer-events-none hidden lg:block"
-        style={{ backgroundColor: textColor }}
-      ></div>
-
+      {/* 1. MASSIVE BACKGROUND "02" - Anchors the bottom left */}
+      <div className="absolute -bottom-24 -left-16 select-none pointer-events-none z-0">
+        <span
+          className="text-[30rem] md:text-[45rem] font-black leading-none opacity-[0.03] italic tracking-tighter"
+          style={{ color: textColor }}
+        >
+          02
+        </span>
+      </div>
       <div className="max-w-7xl mx-auto relative z-10 flex flex-col lg:flex-row gap-16 lg:gap-24">
         {/* LEFT COLUMN: Sticky Header & Description */}
         <div className="lg:w-1/3 flex flex-col h-auto lg:h-[80vh] lg:sticky lg:top-24">
@@ -285,7 +283,7 @@ const Projects = ({
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="font-mono text-sm animate-pulse opacity-50">
-                INITIALIZING_UPLINK...
+                Loading...
               </div>
             </div>
           ) : (
