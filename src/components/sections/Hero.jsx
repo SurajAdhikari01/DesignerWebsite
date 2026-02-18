@@ -86,6 +86,25 @@ const Hero = ({
           background: `radial-gradient(circle 400px at ${mouse.x}px ${mouse.y}px, ${accentColor}15, transparent 80%)`,
         }}
       />
+      <a
+        href="https://buymemomo.com/surajadhikari"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hidden md:flex absolute items-center gap-2 top-10 right-10 z-50 px-5 py-3 bg-white/5 border border-white/10 rounded-bl-2xl hover:bg-white/10 hover:border-white/20 transition-all group backdrop-blur-sm"
+        style={{
+          boxShadow: `0 0 20px -5px ${accentColor}33`,
+        }}
+      >
+        <span className="text-xl group-hover:scale-110 transition-transform duration-300">
+          🥟
+        </span>
+        <span
+          className="text-xs font-mono tracking-widest uppercase opacity-70 group-hover:opacity-100 transition-opacity"
+          style={{ letterSpacing: "0.2em" }}
+        >
+          Buy Me A Momo
+        </span>
+      </a>
 
       {/* 3. MASSIVE BACKGROUND NUMBER */}
       <div className="absolute -bottom-20 -left-20 select-none pointer-events-none group">
@@ -190,6 +209,8 @@ const Hero = ({
           <rect width="100%" height="100%" filter="url(#noise)" />
         </svg>
       </div>
+
+      {/* 8. SUPPORT BUTTON - Buy Me A Momo */}
 
       <style
         dangerouslySetInnerHTML={{

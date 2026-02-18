@@ -91,7 +91,7 @@ const About = ({
                 style={{ backgroundColor: accentColor }}
               />
               <span className="font-mono text-xs tracking-[0.5em] uppercase opacity-40">
-                Biography
+                About me
               </span>
             </div>
 

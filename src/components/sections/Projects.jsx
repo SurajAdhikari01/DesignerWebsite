@@ -231,14 +231,14 @@ const Projects = ({
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <div className="flex items-center gap-4 mb-8">
-              <span className="font-mono text-sm tracking-widest opacity-60">
-                /// 02. WORK
-              </span>
+            <div className="flex items-center gap-6 mb-12">
               <div
-                className="h-[1px] flex-grow opacity-20"
-                style={{ backgroundColor: textColor }}
-              ></div>
+                className="h-[2px] w-16"
+                style={{ backgroundColor: accentColor }}
+              />
+              <span className="font-mono text-xs tracking-[0.5em] uppercase opacity-40">
+                Works
+              </span>
             </div>
 
             <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-8">
