@@ -51,7 +51,7 @@ const About = ({
               <img
                 src="https://github.com/SurajAdhikari01.png"
                 alt="Suraj Adhikari"
-                className="w-full h-full object-cover grayscale opacity-90 hover:grayscale-0 hover:opacity-100 transition-all duration-700"
+                className="w-full h-full object-cover grayscale-50 opacity-90 hover:grayscale-0 hover:opacity-100 transition-all duration-700"
               />
 
               {/* Minimal Overlay Gradient */}
@@ -90,7 +90,7 @@ const About = ({
             </div>
 
             <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-8">
-              Full-stack <br />
+              Software <br />
               <span
                 style={{
                   color: "transparent",
@@ -104,8 +104,8 @@ const About = ({
 
             <p className="text-lg opacity-60 leading-relaxed mb-12 max-w-xl font-light">
               I seamlessly merge technical logic with design aesthetics. My work
-              isn't just about writing code—it's about building resilient,
-              user-centric interfaces that feel alive.
+              isn't just about writing code, it's about building resilient,
+              user-centric interfaces that feel clean.
             </p>
 
             {/* Minimal Stats Grid */}

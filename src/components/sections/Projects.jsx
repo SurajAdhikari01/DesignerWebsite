@@ -277,16 +277,6 @@ const Projects = ({
               </span>
               <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
             </motion.a>
-
-            {/* Status Indicator */}
-            <div className="mt-8 flex items-center gap-2 text-xs font-mono opacity-50">
-              <div
-                className={`w-2 h-2 rounded-full ${loading ? "bg-yellow-500 animate-pulse" : "bg-green-500"}`}
-              ></div>
-              <span>
-                {loading ? "SYNCING WITH GITHUB..." : "LIVE DATA ACTIVE"}
-              </span>
-            </div>
           </motion.div>
         </div>
 

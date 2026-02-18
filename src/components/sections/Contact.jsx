@@ -173,10 +173,12 @@ const Contact = ({
                     </span>
                   </div>
                   <a
-                    href="mailto:suraj@example.com"
+                    href="mailto:surajadhikari.0042@example.com"
                     className="text-xl md:text-2xl font-bold hover:opacity-80 transition-opacity block break-all"
                   >
-                    suraj@example.com
+                    surajadhikari.0042
+                    <br />
+                    @gmail.com
                   </a>
                 </div>
 
@@ -186,39 +188,6 @@ const Contact = ({
                     style={{ backgroundColor: accentColor }}
                   ></div>
                 </div>
-              </div>
-            </div>
-
-            {/* Micro Terminal */}
-            <div
-              ref={terminalRef}
-              className="flex-grow rounded-xl p-6 font-mono text-xs overflow-hidden relative"
-              style={{
-                backgroundColor: isDarkTheme ? "#000000" : "#f0f0f0",
-                border:
-                  "1px solid " +
-                  (isDarkTheme ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"),
-              }}
-            >
-              <div
-                className="absolute top-0 left-0 right-0 h-6 flex items-center px-4 border-b border-opacity-10"
-                style={{ borderColor: textColor }}
-              >
-                <span className="opacity-30">TERMINAL_OUTPUT</span>
-              </div>
-              <div className="mt-6 space-y-2 h-32 overflow-y-auto opacity-70">
-                {terminalLogs.map((log, i) => (
-                  <div key={i} className="flex gap-2">
-                    <span className="opacity-30">[{log.timestamp}]</span>
-                    <span
-                      style={{
-                        color: log.type === "success" ? accentColor : textColor,
-                      }}
-                    >
-                      {">"} {log.text}
-                    </span>
-                  </div>
-                ))}
               </div>
             </div>
           </motion.div>
