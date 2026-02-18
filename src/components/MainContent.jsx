@@ -128,12 +128,6 @@ const MainContent = forwardRef(
           ))}
 
           {/* Footer / Copyright area */}
-          <div
-            className="py-8 text-center text-sm opacity-40"
-            style={{ color: textColor }}
-          >
-            © {new Date().getFullYear()} Portfolio. All rights reserved.
-          </div>
         </div>
       </div>
     );

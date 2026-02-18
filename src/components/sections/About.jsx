@@ -28,19 +28,9 @@ const About = ({
       className="relative w-full min-h-screen py-32 px-6 md:px-12 lg:px-24 flex items-center overflow-hidden"
       style={{ backgroundColor: mainBgColor, color: textColor }}
     >
-      {/* 1. MASSIVE BACKGROUND TEXT "IDENTITY" - Bleeding off the left */}
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-[35%] rotate-90 select-none pointer-events-none z-0">
-        <span
-          className="text-[18rem] md:text-[25rem] font-black uppercase leading-none tracking-tighter opacity-[0.03]"
-          style={{ WebkitTextStroke: `2px ${textColor}`, color: "transparent" }}
-        >
-          Identity
-        </span>
-      </div>
-
       {/* 2. BACKGROUND 01 ANCHOR */}
       <div className="absolute top-10 right-10 select-none pointer-events-none z-0">
-        <span className="text-[20rem] font-black opacity-[0.02] italic leading-none">
+        <span className="text-[20rem] font-black opacity-[0.03] italic leading-none">
           01
         </span>
       </div>

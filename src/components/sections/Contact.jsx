@@ -46,12 +46,12 @@ const Contact = ({
       style={{ backgroundColor: mainBgColor, color: textColor }}
     >
       {/* 1. MASSIVE BACKGROUND TEXT "SIGNAL" */}
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-[25%] rotate-90 select-none pointer-events-none z-0">
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-[40%] rotate-90 select-none pointer-events-none z-0">
         <span
-          className="text-[18rem] md:text-[25rem] font-black uppercase leading-none tracking-tighter opacity-[0.03]"
+          className="text-[12rem] md:text-[12rem] font-black uppercase leading-none tracking-tighter opacity-[0.12] italic"
           style={{ WebkitTextStroke: `2px ${textColor}`, color: "transparent" }}
         >
-          Signal
+          IDEAS?
         </span>
       </div>
 
@@ -238,13 +238,6 @@ const Contact = ({
             </div>
           </motion.form>
         </div>
-      </div>
-
-      {/* FOOTER DECOR */}
-      <div className="absolute bottom-10 left-10 right-10 flex justify-between items-center border-t border-white/5 pt-6 text-[10px] font-mono opacity-20 uppercase tracking-[0.5em]">
-        <span>©2026_EST</span>
-        <span className="hidden md:block">Authorized_Access_Only</span>
-        <span>Suraj_Adhikari_Portfolio</span>
       </div>
     </section>
   );

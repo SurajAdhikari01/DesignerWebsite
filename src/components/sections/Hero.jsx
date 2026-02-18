@@ -49,36 +49,67 @@ const Hero = ({
     <section
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className="relative w-full h-screen flex items-center justify-center overflow-hidden cursor-none"
+      // Removed cursor-none so you can see your mouse
+      className="relative w-full h-screen flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: mainBgColor, color: textColor }}
     >
-      {/* 2. MASSIVE BACKGROUND NUMBER (Off-screen / Brutalist) */}
-      <div className="absolute -bottom-20 -left-20 select-none pointer-events-none">
-        <span className="text-[40rem] font-black leading-none opacity-[0.03] italic tracking-tighter">
+      {/* 1. DYNAMIC GRID SYSTEM (Fills the 'Empty' space) */}
+      <div
+        className="absolute inset-0 z-0 opacity-[0.15]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, ${textColor}11 1px, transparent 1px),
+            linear-gradient(to bottom, ${textColor}11 1px, transparent 1px)
+          `,
+          backgroundSize: "60px 60px",
+          maskImage:
+            "radial-gradient(circle at center, black, transparent 80%)",
+          WebkitMaskImage:
+            "radial-gradient(circle at center, black, transparent 80%)",
+          transform: `translate(${(mouse.x - 500) * 0.01}px, ${(mouse.y - 500) * 0.01}px)`,
+        }}
+      />
+
+      {/* 2. MOUSE LIGHT BEAM (Adds interaction depth) */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0 opacity-40"
+        style={{
+          background: `radial-gradient(circle 400px at ${mouse.x}px ${mouse.y}px, ${accentColor}15, transparent 80%)`,
+        }}
+      />
+
+      {/* 3. MASSIVE BACKGROUND NUMBER */}
+      <div className="absolute -bottom-20 -left-20 select-none pointer-events-none group">
+        <span className="text-[40rem] font-black leading-none opacity-[0.03] italic tracking-tighter transition-all duration-700 group-hover:opacity-[0.05]">
           00
         </span>
       </div>
 
-      {/* 3. FLOATING GEOMETRIC SHAPES */}
-      {/* Large Hollow Circle */}
+      {/* 4. ASYMMETRIC GEOMETRY */}
+      {/* Rotating Ring */}
       <div
-        className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] border-[1px] rounded-full opacity-10 animate-spin-slow"
+        className="absolute top-[-5%] right-[-5%] w-[45vw] h-[45vw] border-[1px] rounded-full opacity-10 animate-spin-slow"
         style={{ borderColor: accentColor }}
       />
-
-      {/* The "Frame" Square - Parallax effect */}
+      {/* Floating Glass Rectangle */}
       <div
-        className="absolute w-[300px] h-[300px] border border-white/10 backdrop-blur-[2px] z-0"
+        className="absolute w-[400px] h-[150px] border border-white/5 backdrop-blur-[4px] z-0 skew-x-12"
         style={{
-          transform: `translate(${(mouse.x - 500) * 0.02}px, ${(mouse.y - 500) * 0.02}px)`,
-          left: "20%",
-          top: "25%",
+          transform: `translate(${(mouse.x - 500) * -0.03}px, ${(mouse.y - 500) * -0.03}px)`,
+          right: "15%",
+          bottom: "20%",
+        }}
+      />
+      {/* Vertical Data Line */}
+      <div
+        className="absolute top-0 left-1/4 w-[1px] h-full opacity-10"
+        style={{
+          background: `linear-gradient(to bottom, transparent, ${textColor}, transparent)`,
         }}
       />
 
-      {/* 4. MAIN CONTENT CONTAINER */}
+      {/* 5. MAIN CONTENT */}
       <div className="relative z-10 w-full max-w-7xl px-10 flex flex-col items-start">
-        {/* Name Stack */}
         <div className="relative">
           <h1 className="text-[12vw] font-black leading-[0.8] tracking-tighter uppercase italic">
             <div className="relative overflow-visible">
@@ -93,28 +124,43 @@ const Hero = ({
                   color: "transparent",
                   WebkitTextStroke: `2px ${textColor}`,
                 }}
-                className="block opacity-70 hover:opacity-100 transition-all duration-700"
+                className="block opacity-70"
               />
-
-              {/* Accented Underline / Bar */}
               <div
-                className="absolute -bottom-4 left-0 h-4 bg-white"
+                className="absolute -bottom-4 left-0 h-4"
                 style={{
                   width: "40%",
                   backgroundColor: accentColor,
-                  boxShadow: `0 0 40px ${accentColor}80`,
+                  boxShadow: `0 0 50px ${accentColor}`,
                 }}
               />
             </div>
           </h1>
         </div>
-
-        {/* Floating Vertical Line Decor */}
-        <div className="absolute right-20 top-0 h-full w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
       </div>
 
-      {/* 5. THE "GRAIN" AND TEXTURE */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.15] mix-blend-soft-light overflow-hidden">
+      {/* 6. TECHNICAL OVERLAYS (Corner Brackets) */}
+      <div className="absolute inset-10 border border-white/5 pointer-events-none">
+        <div
+          className="absolute top-0 left-0 w-8 h-8 border-t border-l"
+          style={{ borderColor: accentColor }}
+        />
+        <div
+          className="absolute top-0 right-0 w-8 h-8 border-t border-r"
+          style={{ borderColor: accentColor }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-8 h-8 border-b border-l"
+          style={{ borderColor: accentColor }}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-8 h-8 border-b border-r"
+          style={{ borderColor: accentColor }}
+        />
+      </div>
+
+      {/* 7. TEXTURE */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.1] mix-blend-overlay">
         <svg
           viewBox="0 0 200 200"
           xmlns="http://www.w3.org/2000/svg"
@@ -123,27 +169,12 @@ const Hero = ({
           <filter id="noise">
             <feTurbulence
               type="fractalNoise"
-              baseFrequency="0.8"
-              numOctaves="4"
-              stitchTiles="stitch"
+              baseFrequency="0.9"
+              numOctaves="3"
             />
           </filter>
           <rect width="100%" height="100%" filter="url(#noise)" />
         </svg>
-      </div>
-
-      {/* 6. CORNER ACCENTS */}
-      <div className="absolute top-10 left-10 flex gap-4">
-        <div className="w-3 h-3 border border-white" />
-        <div
-          className="w-3 h-3 bg-white"
-          style={{ backgroundColor: accentColor }}
-        />
-      </div>
-
-      <div className="absolute bottom-10 right-10 flex flex-col items-end gap-2 rotate-180">
-        <div className="w-20 h-[1px] bg-white/30" />
-        <div className="w-10 h-[1px] bg-white/30" />
       </div>
 
       <style
@@ -154,7 +185,7 @@ const Hero = ({
           to { transform: rotate(360deg); }
         }
         .animate-spin-slow {
-          animation: spin-slow 25s linear infinite;
+          animation: spin-slow 40s linear infinite;
         }
       `,
         }}
