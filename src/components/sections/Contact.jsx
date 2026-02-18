@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import emailjs from "@emailjs/browser";
 import {
   Send,
   Mail,
@@ -28,14 +29,37 @@ const Contact = ({
     setFormStatus("sending");
     addLog("initializing_handshake...");
 
+    const SERVICE_ID =
+      import.meta.env.VITE_EMAILJS_SERVICE_ID || "YOUR_SERVICE_ID";
+    const TEMPLATE_ID =
+      import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID";
+    const PUBLIC_KEY =
+      import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "YOUR_PUBLIC_KEY";
+
+    const emailMessageContent = `Email sent from ${formData.email} saying:\n\n${formData.message}`;
+
+    const templateParams = {
+      name: formData.name,
+      time: new Date().toUTCString(),
+      message: emailMessageContent,
+    };
+
     setTimeout(() => {
       addLog("packet_encryption_verified");
-      setTimeout(() => {
-        addLog("transmission_complete");
-        setFormStatus("success");
-        setFormData({ name: "", email: "", message: "" });
-        setTimeout(() => setFormStatus("idle"), 5000);
-      }, 1000);
+
+      emailjs
+        .send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
+        .then(() => {
+          addLog("transmission_complete");
+          setFormStatus("success");
+          setFormData({ name: "", email: "", message: "" });
+          setTimeout(() => setFormStatus("idle"), 5000);
+        })
+        .catch((error) => {
+          console.error("EmailJS Error:", error);
+          addLog("transmission_failed");
+          setFormStatus("idle");
+        });
     }, 1500);
   };
 
@@ -48,7 +72,7 @@ const Contact = ({
       {/* 1. MASSIVE BACKGROUND TEXT "SIGNAL" */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-[40%] rotate-90 select-none pointer-events-none z-0">
         <span
-          className="text-[12rem] md:text-[12rem] font-black uppercase leading-none tracking-tighter opacity-[0.12] italic"
+          className="text-[26rem] md:text-[12rem] font-black uppercase leading-none tracking-tighter opacity-[0.12] italic"
           style={{ WebkitTextStroke: `2px ${textColor}`, color: "transparent" }}
         >
           IDEAS?
@@ -166,7 +190,7 @@ const Contact = ({
                     placeholder="Name"
                   />
                   <label className="absolute left-0 top-0 text-[10px] uppercase tracking-[0.2em] opacity-30 peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:top-0 peer-focus:text-[10px] transition-all">
-                    01 _ Identity
+                    01 _ Name
                   </label>
                 </div>
 
@@ -182,7 +206,7 @@ const Contact = ({
                     placeholder="Email"
                   />
                   <label className="absolute left-0 top-0 text-[10px] uppercase tracking-[0.2em] opacity-30 peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:top-0 peer-focus:text-[10px] transition-all">
-                    02 _ Signal_Source
+                    02 _ Mail _ Address
                   </label>
                 </div>
               </div>
@@ -199,7 +223,7 @@ const Contact = ({
                   placeholder="Message"
                 />
                 <label className="absolute left-0 top-0 text-[10px] uppercase tracking-[0.2em] opacity-30 peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:top-0 peer-focus:text-[10px] transition-all">
-                  03 _ Payload
+                  03 _ Message _ or _ query
                 </label>
               </div>
 
@@ -218,7 +242,7 @@ const Contact = ({
               >
                 {formStatus === "idle" && (
                   <>
-                    <span>Initiate Transmission</span>
+                    <span>Send Message</span>
                     <Send
                       size={16}
                       className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
@@ -231,7 +255,7 @@ const Contact = ({
                 {formStatus === "success" && (
                   <>
                     <CheckCircle size={18} />
-                    <span>Signal Delivered</span>
+                    <span>Message Delivered</span>
                   </>
                 )}
               </button>

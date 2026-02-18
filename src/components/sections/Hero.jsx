@@ -102,7 +102,7 @@ const Hero = ({
           className="text-xs font-mono tracking-widest uppercase opacity-70 group-hover:opacity-100 transition-opacity"
           style={{ letterSpacing: "0.2em" }}
         >
-          Buy Me A Momo
+          Buy Me Momo
         </span>
       </a>
 

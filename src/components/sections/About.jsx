@@ -20,7 +20,11 @@ const About = ({
       icon: Brain,
       tools: ["TensorFlow", "LangChain", "OpenAI"],
     },
-    { label: "Mobile", icon: Smartphone, tools: ["React Native", "Expo"] },
+    {
+      label: "Mobile",
+      icon: Smartphone,
+      tools: ["Expo", "Swift"],
+    },
   ];
 
   return (
@@ -122,7 +126,7 @@ const About = ({
             {/* STATS MATRIX */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-12 mb-20">
               {[
-                { label: "Systems Built", value: "30+" },
+                { label: "Systems Built", value: "10+" },
                 { label: "Experience", value: "04Y" },
                 { label: "Stack", value: "Full" },
               ].map((stat, i) => (

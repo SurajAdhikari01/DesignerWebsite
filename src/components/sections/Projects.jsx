@@ -110,7 +110,6 @@ const Projects = ({
       if (GITHUB_TOKEN) {
         try {
           console.log("Attempting to fetch pinned repos...");
-          console.log("printing token", GITHUB_TOKEN);
           repoData = await fetchPinnedRepos(GITHUB_USERNAME, GITHUB_TOKEN);
           success = true;
         } catch (err) {
