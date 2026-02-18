@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const ScrambleText = ({ text, delay = 0, className, style }) => {
+const ScrambleText = ({ text, delay = 0, className, style, onComplete }) => {
   const [display, setDisplay] = useState("");
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
   useEffect(() => {
     let iteration = 0;
+
     const startTimeout = setTimeout(() => {
       const interval = setInterval(() => {
         setDisplay(
@@ -17,13 +18,20 @@ const ScrambleText = ({ text, delay = 0, className, style }) => {
             })
             .join(""),
         );
-        if (iteration >= text.length) clearInterval(interval);
+
+        if (iteration >= text.length) {
+          clearInterval(interval);
+          onComplete && onComplete(); // <-- notify parent
+        }
+
         iteration += 1 / 3;
       }, 30);
+
       return () => clearInterval(interval);
     }, delay);
+
     return () => clearTimeout(startTimeout);
-  }, [text, delay]);
+  }, [text, delay, onComplete]);
 
   return (
     <span className={className} style={style}>
@@ -39,6 +47,7 @@ const Hero = ({
 }) => {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
+  const [isFinished, setIsFinished] = useState(false);
 
   const handleMouseMove = (e) => {
     const { clientX, clientY } = e;
@@ -120,18 +129,23 @@ const Hero = ({
               <ScrambleText
                 text="ADHIKARI"
                 delay={900}
+                onComplete={() => setIsFinished(true)}
                 style={{
                   color: "transparent",
                   WebkitTextStroke: `2px ${textColor}`,
                 }}
                 className="block opacity-70"
               />
+
+              {/* THE ANIMATED UNDERLINE */}
               <div
-                className="absolute -bottom-4 left-0 h-4"
+                className="absolute -bottom-6 left-0 h-4 transition-all duration-[1200ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
                 style={{
-                  width: "40%",
+                  // Starts at 0 width and invisible
+                  width: isFinished ? "40%" : "0%",
+                  opacity: isFinished ? 1 : 0,
                   backgroundColor: accentColor,
-                  boxShadow: `0 0 50px ${accentColor}`,
+                  boxShadow: isFinished ? `0 0 50px ${accentColor}aa` : "none",
                 }}
               />
             </div>

@@ -13,7 +13,7 @@ function App() {
   const [disableContainerTransition, setDisableContainerTransition] =
     useState(false);
 
-  const [activeTheme, setActiveTheme] = useState("skyBlush");
+  const [activeTheme, setActiveTheme] = useState("carbonNoir");
 
   const [hoveredTheme, setHoveredTheme] = useState(null);
 
