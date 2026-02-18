@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Code, Server, Brain, Smartphone } from "lucide-react";
+import profileimage from "../../assets/image.png";
 
 const About = ({
   accentColor = "#00f0ff",
@@ -48,7 +49,7 @@ const About = ({
             {/* The Main Image Container */}
             <div className="relative z-10 aspect-[4/5] w-full overflow-hidden border border-white/10  hover:grayscale-0 transition-all duration-1000 ease-in-out">
               <img
-                src="https://github.com/SurajAdhikari01.png"
+                src={profileimage}
                 alt="Suraj Adhikari"
                 className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-1000"
               />
