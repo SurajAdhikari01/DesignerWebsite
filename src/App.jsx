@@ -302,6 +302,27 @@ function App() {
           }
         }}
       >
+        {/* Close Button for Mobile */}
+        <button
+          onClick={closeNav}
+          className="sm:hidden absolute top-4 right-4 z-50 p-2 transition-all duration-300 hover:scale-110"
+          aria-label="Close menu"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={textColor}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
         {/* Nav Links */}
         <div className="flex flex-col items-start gap-y-6 sm:gap-y-10 px-8 sm:px-16 w-full flex-1 justify-center">
           {navLinks.map((link) => (

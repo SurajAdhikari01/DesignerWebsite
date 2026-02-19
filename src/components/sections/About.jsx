@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Code, Server, Brain, Smartphone } from "lucide-react";
-import profileimage from "../../assets/image.png";
+import profileimage from "../../assets/newimage.png";
 
 const About = ({
   accentColor = "#00f0ff",
